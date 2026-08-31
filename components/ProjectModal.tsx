@@ -4,7 +4,7 @@ import React from "react";
 import { Project } from "@/data/portfolioData";
 import { soundManager } from "./SoundManager";
 import { PixelComputer, PixelGamepad, PixelPaintBrush, PixelDatabase, PixelChart } from "./PixelIcons";
-import { X, ExternalLink, CheckCircle, User, Wrench, Sparkles } from "lucide-react";
+import { X, ExternalLink, CheckCircle, User, Wrench, Sparkles, FolderOpen, Eye, Globe } from "lucide-react";
 
 interface ProjectModalProps {
   project: Project | null;
@@ -45,7 +45,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               soundManager.playWindowClose();
               onClose();
             }}
-            className="w-6 h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border-2 border-black font-pixel text-xs active:translate-y-0.5"
+            className="w-6 h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border-2 border-black font-pixel text-xs active:translate-y-0.5 cursor-pointer"
             title="Tutup Jendela"
           >
             ✕
@@ -70,7 +70,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             </div>
           </div>
 
-          {/* Metadata Badges (Role & Category) */}
+          {/* Metadata Badges */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-pixel text-[8px]">
             <div className="bg-[#111f30] p-2 border border-black flex items-center gap-2">
               <User className="w-3.5 h-3.5 text-yellow-400" />
@@ -81,6 +81,81 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               <span>CATEGORY: {project.category}</span>
             </div>
           </div>
+
+          {/* Project Link Action Buttons (Figma / Live Web / Drive / GitHub) */}
+          {(project.demoUrl || project.secondaryUrl || project.githubUrl || project.certificateUrl) && (
+            <div className="bg-[#1e293b] p-3 border-2 border-black space-y-2">
+              <h4 className="font-pixel text-[9px] text-yellow-400 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-yellow-400" />
+                <span>LINK KARYA & HASIL PROJEK:</span>
+              </h4>
+              <div className="flex flex-col gap-2">
+                {project.demoUrl && (
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundManager.playLevelUp()}
+                    className="flex items-center justify-between p-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-pixel text-[8px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{project.demoLabel || "BUKA LINK PROJEK"}</span>
+                    </div>
+                    <span className="text-yellow-300">KUNJUNGI ▶</span>
+                  </a>
+                )}
+
+                {project.secondaryUrl && (
+                  <a
+                    href={project.secondaryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundManager.playLevelUp()}
+                    className="flex items-center justify-between p-2.5 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-pixel text-[8px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{project.secondaryLabel || "BUKA LINK KEDUA"}</span>
+                    </div>
+                    <span className="text-yellow-300">KUNJUNGI ▶</span>
+                  </a>
+                )}
+
+                {project.githubUrl && (
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundManager.playLevelUp()}
+                    className="flex items-center justify-between p-2.5 bg-[#334155] hover:bg-[#475569] text-white font-pixel text-[8px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{project.demoLabel || "LIHAT REPOSITORI GITHUB"}</span>
+                    </div>
+                    <span className="text-yellow-300">BUKA REPO ▶</span>
+                  </a>
+                )}
+
+                {project.certificateUrl && (
+                  <a
+                    href={project.certificateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => soundManager.playLevelUp()}
+                    className="flex items-center justify-between p-2.5 bg-[#15803d] hover:bg-[#16a34a] text-white font-pixel text-[8px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{project.demoLabel || "LIHAT BUKTI SERTIFIKAT"}</span>
+                    </div>
+                    <span className="text-yellow-300">LIHAT DOKUMEN ▶</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Long Description */}
           <div className="bg-[#111f30] p-3 border-2 border-black space-y-2">
@@ -137,7 +212,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               soundManager.playWindowClose();
               onClose();
             }}
-            className="px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold"
+            className="px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold cursor-pointer"
           >
             TUTUP QUEST LOG [ESC]
           </button>

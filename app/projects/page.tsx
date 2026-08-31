@@ -161,6 +161,53 @@ export default function ProjectsPage() {
                       </span>
                     ))}
                   </div>
+                  {/* Direct Project Links */}
+                  {(project.demoUrl || project.githubUrl || project.certificateUrl) && (
+                    <div className="mb-3">
+                      {project.demoUrl && (
+                        <a
+                          href={project.demoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundManager.playLevelUp();
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-pixel text-[7px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all mb-1"
+                        >
+                          <span>🔗 {project.demoLabel || "BUKA LINK PROJEK"}</span>
+                        </a>
+                      )}
+                      {project.secondaryUrl && (
+                        <a
+                          href={project.secondaryUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundManager.playLevelUp();
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-pixel text-[7px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all mb-1"
+                        >
+                          <span>📱 {project.secondaryLabel || "BUKA LINK KEDUA"}</span>
+                        </a>
+                      )}
+                      {project.githubUrl && !project.demoUrl && (
+                        <a
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundManager.playLevelUp();
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-[#334155] hover:bg-[#475569] text-white font-pixel text-[7px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all mb-1"
+                        >
+                          <span>💻 LIHAT REPO GITHUB</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Open Modal Button */}

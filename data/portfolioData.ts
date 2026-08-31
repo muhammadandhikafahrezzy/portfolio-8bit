@@ -10,7 +10,11 @@ export interface Project {
   highlights: string[];
   icon: "database" | "chart" | "monitor" | "gamepad";
   demoUrl?: string;
+  demoLabel?: string;
+  secondaryUrl?: string;
+  secondaryLabel?: string;
   githubUrl?: string;
+  certificateUrl?: string;
 }
 
 export interface Experience {
@@ -60,7 +64,7 @@ export const PORTFOLIO_DATA = {
     graduation: "Lulus / Selesai: Juli 2026",
     gpa: "IPK 3.69 / 4.00",
     location: "Depok / Surabaya, Indonesia",
-    bio: "Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026, IPK 3.69) dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Cleaning & Preprocessing, SQL Database Querying, Pemodelan Sistem Pendukung Keputusan (DSS/SPK), dan Visualisasi Interaktif Tableau. Berpengalaman langsung mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis perkembangan koperasi, serta bersertifikasi resmi Data Analyst for Business dari Bitlabs Academy.",
+    bio: "Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026, IPK 3.69) dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Cleaning & Preprocessing, SQL Database Querying, Pemodelan Data, dan Visualisasi Interaktif Tableau. Berpengalaman langsung mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis perkembangan koperasi, serta bersertifikasi resmi Data Analyst for Business dari Bitlabs Academy.",
     stats: {
       level: 23,
       classType: "Data Analyst & BI Specialist",
@@ -76,7 +80,7 @@ export const PORTFOLIO_DATA = {
         skills: [
           { name: "SQL (MySQL / PostgreSQL)", level: 92 },
           { name: "Python (Pandas, NumPy)", level: 88 },
-          { name: "Decision Support Systems (DSS/MOORA)", level: 90 },
+          { name: "Google BigQuery", level: 82 },
           { name: "Data Cleaning & Preprocessing", level: 95 },
           { name: "Exploratory Data Analysis (EDA)", level: 90 },
           { name: "Advanced Excel (Pivot, VLOOKUP)", level: 94 },
@@ -109,7 +113,7 @@ export const PORTFOLIO_DATA = {
     ] as SkillCategory[],
   },
 
-  // Faithfully extracted from Portfolio UiUx Desainer.pdf and actual work experience (No Period in Projects)
+  // Projects faithfully extracted with exact authentic links from Portfolio UiUx Desainer.pdf
   projects: [
     {
       id: "ahm-data-analytics",
@@ -131,27 +135,8 @@ export const PORTFOLIO_DATA = {
         "Dashboard Laporan Operasional Bulanan",
       ],
       icon: "database",
-    },
-    {
-      id: "moora-vendor-picker",
-      title: "MooraVendorPicker — Decision Support System (DSS) Data Analytics",
-      category: "Data Analysis",
-      subtitle: "Sistem Pendukung Keputusan Optimasi Multi-Atribut Metode MOORA",
-      description: "Penerapan model matematika Decision Support System (DSS) metode MOORA untuk memecahkan masalah multikriteria dalam pemilihan penerima bantuan / vendor secara objektif.",
-      longDescription: [
-        "Merancang model matematis Decision Support System (DSS) berbasis metode Multi-Objective Optimization on the basis of Ratio Analysis (MOORA).",
-        "Mengolah data atribut kriteria yang saling bertentangan secara simultan untuk menghasilkan perankingan objektif dan akurat.",
-        "Merancang antarmuka web dan mobile menggunakan Figma untuk memudahkan pengambil keputusan (stakeholder) melihat hasil kalkulasi data secara interaktif dan transparan.",
-        "Mengembangkan alur input data kriteria, bobot nilai, dan visualisasi ranking keputusan.",
-      ],
-      role: "Data Analyst & UI/UX Designer",
-      tools: ["MOORA Algorithm", "Decision Support System", "Data Modeling", "Figma", "UI/UX Design"],
-      highlights: [
-        "Implementasi Algoritma Multi-Objective MOORA",
-        "Matriks Keputusan & Normalisasi Data Otomatis",
-        "Desain Antarmuka Web & Mobile Figma Responsif",
-      ],
-      icon: "database",
+      certificateUrl: "/Sertifikat magang kopkar.jpg",
+      demoLabel: "LIHAT SERTIFIKAT MAGANG KOPKAR AHM",
     },
     {
       id: "bitlabs-business-analytics",
@@ -173,6 +158,31 @@ export const PORTFOLIO_DATA = {
         "Actionable Business Insights & Strategy",
       ],
       icon: "chart",
+      githubUrl: "https://github.com/045AndhikaF",
+      demoLabel: "LIHAT REPOSITORI GITHUB",
+    },
+    {
+      id: "moora-vendor-picker",
+      title: "MooraVendorPicker — Decision Support System (DSS) UI/UX Design",
+      category: "UI/UX & Web",
+      subtitle: "Desain Antarmuka Web & Mobile Sistem Pengambilan Keputusan MOORA",
+      description: "Perancangan desain antarmuka web dan mobile menggunakan Figma untuk sistem pendukung keputusan (DSS) berbasis metode multiobjektif MOORA.",
+      longDescription: [
+        "Merancang antarmuka website dan mobile app yang interaktif dan responsif menggunakan Figma untuk sistem Decision Support System (DSS).",
+        "Mengimplementasikan hierarki visual yang jelas untuk menampilkan tahapan perhitungan metode MOORA (Multi-Objective Optimization by Ratio Analysis) secara intuitif.",
+        "Membuat alur pengguna (user flow) dan wireframe interaktif yang mempermudah pimpinan/stakeholder memasukkan kriteria dan melihat perankingan otomatis.",
+        "Menerapkan prinsip desain UI/UX modern dengan layout rapi dan navigasi yang mudah dipahami.",
+      ],
+      role: "UI/UX Designer (Figma Prototyping)",
+      tools: ["Figma", "UI/UX Design", "Decision Support System (DSS)", "MOORA Method", "Prototyping"],
+      highlights: [
+        "Desain Antarmuka Web & Mobile Figma Interaktif",
+        "Visualisasi Alur Multi-Objective MOORA",
+        "Prototipe User-Friendly untuk Stakeholder",
+      ],
+      icon: "monitor",
+      demoUrl: "https://www.figma.com/file/nkdWNCdooHmHJ8fCMHCRKU/Figma-basics?type=design&node-id=514%3A14&mode=design&t=pBYvN6fXUB2bwhlW-1",
+      demoLabel: "BUKA PROTOTIPE FIGMA (MOORAVENDORPICKER)",
     },
     {
       id: "teknopolis-project-management",
@@ -194,6 +204,10 @@ export const PORTFOLIO_DATA = {
         "Pengalaman Manajemen Proyek End-to-End",
       ],
       icon: "monitor",
+      demoUrl: "https://www.figma.com/file/6PGk66ynXSnRIuKOshbm4U/Website-Teknopolis?type=design&node-id=0%3A1&mode=design&t=0iEJy4VYoYCGc8Xq-1",
+      demoLabel: "BUKA FIGMA: TEKNOPOLIS WEB",
+      secondaryUrl: "https://www.figma.com/file/6PGk66ynXSnRIuKOshbm4U/Website-Teknopolis?type=design&node-id=4-1187&mode=design&t=gpu4hMIsvOZNRuZr-0",
+      secondaryLabel: "BUKA FIGMA: TEKNOPOLIS MOBILE",
     },
     {
       id: "unesa-health-care",
@@ -204,7 +218,7 @@ export const PORTFOLIO_DATA = {
       longDescription: [
         "Menerapkan prinsip Human-Computer Interaction (HCI) untuk merancang antarmuka website dan mobile yang menarik, intuitif, dan mudah digunakan oleh mahasiswa dan staf kampus.",
         "Mengeksplorasi hierarki visual, psikologi warna, tipografi, dan komposisi objek untuk menciptakan pengalaman pengguna yang nyaman.",
-        "Membangun prototipe interaktif di Figma serta implementasi web menggunakan Wix.com.",
+        "Membangun prototipe interaktif di Figma serta implementasi web menggunakan platform Wix.com.",
         "Melakukan usability testing untuk mengidentifikasi potensi kendala navigasi pengguna.",
       ],
       role: "HCI & UI/UX Designer",
@@ -215,6 +229,8 @@ export const PORTFOLIO_DATA = {
         "Prototipe Interaktif Figma & Wix.com",
       ],
       icon: "monitor",
+      demoUrl: "https://ali21069.wixsite.com/kel-4/services-4",
+      demoLabel: "KUNJUNGI WEB LIVE (UNESA HEALTH CARE)",
     },
     {
       id: "kanaya-digital-assets",
@@ -236,6 +252,8 @@ export const PORTFOLIO_DATA = {
         "Peningkatan Daya Tarik Visual Brand",
       ],
       icon: "monitor",
+      demoUrl: "https://drive.google.com/drive/folders/1VyyeR9vSLB50BospMxy3uw1pZWYV_Vef?usp=sharing",
+      demoLabel: "LIHAT HASIL KARYA (GOOGLE DRIVE FOLDER)",
     },
   ] as Project[],
 
