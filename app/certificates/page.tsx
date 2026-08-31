@@ -2,17 +2,22 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import Image from "next/image";
+import { PORTFOLIO_DATA, Certificate } from "@/data/portfolioData";
 import { soundManager } from "@/components/SoundManager";
-import { Award, FileText, Calendar, ArrowRight, Sparkles, CheckCircle2, X } from "lucide-react";
+import { Award, FileText, Calendar, ArrowRight, Sparkles, Eye, Download } from "lucide-react";
 
 export default function CertificatesPage() {
-  const [activePdf, setActivePdf] = useState<string | null>(null);
+  const [activeDoc, setActiveDoc] = useState<{ url: string; type: "image" | "pdf"; title: string } | null>(null);
 
-  const handleOpenPdf = (pdfUrl?: string) => {
-    if (!pdfUrl) return;
+  const handleOpenDoc = (cert: Certificate) => {
+    if (!cert.fileUrl) return;
     soundManager.playWindowOpen();
-    setActivePdf(pdfUrl);
+    setActiveDoc({
+      url: cert.fileUrl,
+      type: cert.fileType || "pdf",
+      title: cert.title,
+    });
   };
 
   return (
@@ -51,11 +56,11 @@ export default function CertificatesPage() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-yellow-400" />
               <h2 className="font-pixel text-xs md:text-sm text-yellow-400">
-                RUANG PIALA (TROPHY ROOM) & SERTIFIKASI RESMI
+                RUANG PIALA (TROPHY ROOM) & BUKTI SERTIFIKASI RESMI
               </h2>
             </div>
             <p className="font-vt323 text-base md:text-lg text-slate-300">
-              Koleksi sertifikat kelulusan program pembelajaran, sertifikasi kompetensi analisis data bisnis, dan penghargaan akademik resmi.
+              Koleksi seluruh sertifikat kelulusan, sertifikasi kompetensi analisis data, magang industri Kopkar PT Astra Honda Motor, dan dokumen pengalaman akademik UNESA (Lulus Juli 2026).
             </p>
           </div>
 
@@ -94,22 +99,25 @@ export default function CertificatesPage() {
                   </p>
                 </div>
 
-                {cert.pdfFile && (
+                {cert.fileUrl && (
                   <div className="space-y-2">
                     <button
-                      onClick={() => handleOpenPdf(cert.pdfFile)}
+                      onClick={() => handleOpenDoc(cert)}
                       className="w-full flex items-center justify-center gap-2 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[9px] py-2.5 border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer font-bold transition-colors"
                     >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>PREVIEW DOKUMEN SERTIFIKAT (PDF)</span>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>
+                        PREVIEW DOKUMEN ({cert.fileType === "image" ? "GAMBAR/JPG" : "PDF"})
+                      </span>
                     </button>
                     <a
-                      href={cert.pdfFile}
+                      href={cert.fileUrl}
                       download
                       onClick={() => soundManager.playLevelUp()}
-                      className="w-full flex items-center justify-center gap-1 bg-[#1e293b] hover:bg-[#334155] text-slate-200 font-pixel text-[8px] py-1.5 border border-black text-center block"
+                      className="w-full flex items-center justify-center gap-1.5 bg-[#1e293b] hover:bg-[#334155] text-slate-200 font-pixel text-[8px] py-2 border border-black text-center block transition-colors"
                     >
-                      <span>UNDUH FILE PDF LANGSUNG</span>
+                      <Download className="w-3 h-3" />
+                      <span>UNDUH BERKAS SERTIFIKAT</span>
                     </a>
                   </div>
                 )}
@@ -132,35 +140,48 @@ export default function CertificatesPage() {
               onClick={() => soundManager.playClick()}
               className="px-4 py-2.5 bg-[#9333ea] hover:bg-[#7e22ce] text-white font-pixel text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center gap-1.5"
             >
-              <span>MAINKAN RETRO MINIGAME 🕹️</span>
+              <span>MAINKAN SUPER ANDHIKA BROS 🕹️</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* PDF Modal Viewer */}
-      {activePdf && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-sm">
+      {/* Document Modal Viewer (Supports Image and PDF) */}
+      {activeDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in">
           <div className="bg-[#0f172a] border-4 border-black shadow-[8px_8px_0px_#000] max-w-4xl w-full h-[85vh] flex flex-col">
             <div className="bg-[#d97706] px-3 py-2 flex items-center justify-between border-b-4 border-black">
-              <span className="font-pixel text-xs text-white">SERTIFIKAT_VIEWER.PDF</span>
+              <span className="font-pixel text-xs text-white truncate max-w-[80%]">
+                {activeDoc.title}
+              </span>
               <button
                 onClick={() => {
                   soundManager.playWindowClose();
-                  setActivePdf(null);
+                  setActiveDoc(null);
                 }}
-                className="w-6 h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border-2 border-black font-pixel text-xs"
+                className="w-6 h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border-2 border-black font-pixel text-xs cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            <div className="flex-1 bg-slate-900 p-2">
-              <iframe
-                src={activePdf}
-                className="w-full h-full border-2 border-black"
-                title="Certificate PDF Viewer"
-              />
+            <div className="flex-1 bg-slate-900 p-2 flex items-center justify-center overflow-auto">
+              {activeDoc.type === "image" ? (
+                <div className="relative w-full h-full max-h-[75vh]">
+                  <Image
+                    src={activeDoc.url}
+                    alt={activeDoc.title}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              ) : (
+                <iframe
+                  src={activeDoc.url}
+                  className="w-full h-full border-2 border-black"
+                  title={activeDoc.title}
+                />
+              )}
             </div>
           </div>
         </div>

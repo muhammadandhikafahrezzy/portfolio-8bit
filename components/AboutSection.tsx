@@ -128,7 +128,7 @@ export const AboutSection: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#162a42] p-2 border border-black">
                   <Award className="w-3.5 h-3.5 text-green-400" />
-                  <span>{PORTFOLIO_DATA.about.gpa}</span>
+                  <span>{PORTFOLIO_DATA.about.gpa} (Lulus Jul 2026)</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#162a42] p-2 border border-black sm:col-span-2">
                   <MapPin className="w-3.5 h-3.5 text-red-400" />

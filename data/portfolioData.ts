@@ -20,8 +20,11 @@ export interface Experience {
   location: string;
   role: string;
   period: string;
+  yearRange: string;
   badge: string;
   points: string[];
+  certificateFile?: string;
+  certificateType?: "image" | "pdf";
 }
 
 export interface Certificate {
@@ -31,7 +34,8 @@ export interface Certificate {
   date: string;
   credentialId?: string;
   description: string;
-  pdfFile?: string;
+  fileUrl?: string;
+  fileType?: "image" | "pdf";
 }
 
 export interface SkillCategory {
@@ -50,19 +54,20 @@ export const PORTFOLIO_DATA = {
     role: "Data Analyst & Business Intelligence",
   },
   about: {
-    dialogue: "SIAPA SAYA? SEORANG DATA ANALYST YANG BERFOKUS PADA PENGOLAHAN DATA BISNIS, QUERY SQL, ANALISIS PYTHON, DAN PEMBUATAN DASHBOARD VISUALISASI (TABLEAU, LOOKER STUDIO) DENGAN PERSPEKTIF USER-ORIENTED!",
+    dialogue: "SIAPA SAYA? SEORANG DATA ANALYST LULUSAN S1 SISTEM INFORMASI UNESA (JULI 2026, IPK 3.69) YANG BERFOKUS PADA PENGOLAHAN DATA BISNIS, QUERY SQL, ANALISIS PYTHON, DAN DASHBOARD VISUALISASI TABLEAU/LOOKER STUDIO!",
     name: "Muhammad Andhika Fahrezzy",
-    title: "Data Analyst (Fokus Karir)",
+    title: "Data Analyst (Lulusan S1 SI UNESA)",
     degree: "S1 Sistem Informasi — Universitas Negeri Surabaya",
+    graduation: "Lulus / Selesai: Juli 2026",
     gpa: "IPK 3.69 / 4.00",
     location: "Depok / Surabaya, Indonesia",
-    bio: "Mahasiswa S1 Sistem Informasi dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Preparation/Cleaning, SQL Querying, Pemodelan Data, dan Visualisasi Interaktif. Memiliki pengalaman nyata mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis tren performa koperasi, serta menyelesaikan program Data Analyst for Business di Bitlabs Academy.",
+    bio: "Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026, IPK 3.69) dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Cleaning & Preprocessing, SQL Database Querying, Pemodelan Data, dan Visualisasi Interaktif. Berpengalaman langsung mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis perkembangan koperasi, serta bersertifikasi resmi Data Analyst for Business dari Bitlabs Academy.",
     stats: {
       level: 23,
       classType: "Data Analyst & BI Specialist",
       hp: "100/100",
       mp: "100/100",
-      exp: "3.69 / 4.00",
+      exp: "3.69 / 4.00 (Lulus Jul 2026)",
       specialMove: "SQL Optimization & Interactive Dashboard Magic",
     },
     skillCategories: [
@@ -171,67 +176,100 @@ export const PORTFOLIO_DATA = {
       icon: "monitor",
     },
   ] as Project[],
+
+  // Ordered Chronologically from OLDEST (2020) to NEWEST (2026)
   experiences: [
+    {
+      id: "kanaya",
+      company: "PT Kanaya Multi Karya",
+      location: "Bekasi, Jawa Barat, Indonesia",
+      role: "Magang Desain Grafis & Aset Digital",
+      period: "Mar 2020 - Jul 2020",
+      yearRange: "2020",
+      badge: "STAGE 01: CREATIVE & ASSETS",
+      points: [
+        "Membuat 40+ materi desain poster web promosi dengan riset tren preferensi target audiens.",
+        "Berkolaborasi dengan tim developer untuk memastikan integritas dan kesesuaian aset visual digital.",
+        "Mengembangkan pemahaman awal integrasi aset visual ke dalam platform digital bisnis.",
+      ],
+    },
     {
       id: "ahm",
       company: "Kopkar PT Astra Honda Motor",
-      location: "Jakarta Utara, Indonesia",
+      location: "Jakarta Utara, DKI Jakarta, Indonesia",
       role: "Magang Data Warehouse Bisnis & IT Support",
       period: "Mar 2024 - Okt 2024",
-      badge: "DATA & ANALYTICS",
+      yearRange: "2024",
+      badge: "STAGE 02: DATA WAREHOUSE & QA",
+      certificateFile: "/Sertifikat magang kopkar.jpg",
+      certificateType: "image",
       points: [
         "Menyusun & memelihara basis data operasional bulanan pinjaman anggota, PO, stok persediaan, dan penjualan.",
         "Melakukan pengecekan stok gudang, data reconciliation, dan kontrol data pengeluaran barang.",
         "Menganalisis tren perkembangan data koperasi 2023-2024 dan menyampaikan visualisasi laporan kepada stakeholder.",
-        "Menguji aplikasi e-commerce Toko AHM versi 2 dan 3 untuk akurasi data transaksi dan stabilitas fitur.",
-      ],
-    },
-    {
-      id: "kanaya",
-      company: "PT Kanaya Multi Karya",
-      location: "Bekasi, Indonesia",
-      role: "Magang Desain Grafis & Aset Digital",
-      period: "Mar 2020 - Jul 2020",
-      badge: "VISUAL & ASSETS",
-      points: [
-        "Membuat 40+ materi desain poster web dengan riset tren preferensi target audiens.",
-        "Berkolaborasi dengan tim developer untuk memastikan integritas dan kesesuaian aset visual digital.",
+        "Menguji aplikasi e-commerce Toko AHM versi 2 dan 3 untuk akurasi data transaksi dan stabilitas fitur antarmuka.",
       ],
     },
     {
       id: "unesa",
       company: "Universitas Negeri Surabaya (UNESA)",
-      location: "Surabaya, Indonesia",
-      role: "S1 Sistem Informasi (IPK: 3.69 / 4.00)",
-      period: "Agu 2021 - Sekarang",
-      badge: "DATA EDUCATION",
+      location: "Surabaya, Jawa Timur, Indonesia",
+      role: "S1 Sistem Informasi (Selesai / Lulus: Juli 2026)",
+      period: "Agu 2021 - Jul 2026",
+      yearRange: "2021 - 2026",
+      badge: "STAGE 03: HIGHER EDUCATION (IPK 3.69)",
+      certificateFile: "/SPK kuliah.pdf",
+      certificateType: "pdf",
       points: [
-        "Fokus keilmuan: Basis Data Lanjut, Probabilitas & Statistika, Data Mining, ERP, dan Analisis Sistem Informasi.",
-        "Aktif dalam perancangan arsitektur data sistem dan visualisasi kebutuhan pemangku kepentingan.",
+        "Menyelesaikan studi S1 Sistem Informasi dengan predikat sangat memuaskan (IPK: 3.69 / 4.00) pada Juli 2026.",
+        "Fokus keilmuan mendalam: Basis Data Lanjut, Probabilitas & Statistika, Data Mining, ERP, dan Analisis Strategi Sistem Informasi.",
+        "Menghasilkan berbagai riset dan proyek implementasi sistem informasi data analitik terintegrasi.",
       ],
     },
   ] as Experience[],
+
   certificates: [
+    {
+      id: "ahm-cert",
+      title: "Sertifikat Magang Kopkar PT Astra Honda Motor",
+      issuer: "Koperasi Karyawan PT Astra Honda Motor",
+      date: "Oktober 2024",
+      description: "Sertifikat resmi penghargaan atas dedikasi dan kinerja memuaskan dalam pengelolaan IT Support, Data Warehouse Bisnis, dan pengujian aplikasi Toko AHM.",
+      fileUrl: "/Sertifikat magang kopkar.jpg",
+      fileType: "image",
+    },
     {
       id: "bitlabs-data",
       title: "Data Analytic for Business Certification",
       issuer: "Bitlabs Academy",
       date: "Desember 2024",
       description: "Sertifikasi resmi penguasaan analisis data bisnis, SQL database querying, visualisasi data Tableau, dan pemecahan masalah data-driven di industri.",
-      pdfFile: "/Nilai -km-1858024-MUHAMMAD ANDHIKA FAHREZZY-1735216618-1-2-2.pdf",
+      fileUrl: "/Nilai -km-1858024-MUHAMMAD ANDHIKA FAHREZZY-1735216618-1-2-2.pdf",
+      fileType: "pdf",
     },
     {
       id: "kampus-merdeka",
       title: "Certificate of Completion - Kampus Merdeka",
       issuer: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi",
       date: "2024",
-      description: "Sertifikat kelulusan program studi independen / magang kompetensi industri dengan capaian nilai akademik memuaskan.",
-      pdfFile: "/certificate-km-1858024-MUHAMMAD ANDHIKA FAHREZZY-1735216618-1-2-1.pdf",
+      description: "Sertifikat kelulusan program studi independen / magang kompetensi industri dengan capaian nilai akademik sangat memuaskan.",
+      fileUrl: "/certificate-km-1858024-MUHAMMAD ANDHIKA FAHREZZY-1735216618-1-2-1.pdf",
+      fileType: "pdf",
+    },
+    {
+      id: "unesa-spk",
+      title: "Surat Pengalaman & Perjanjian Studi UNESA (SPK)",
+      issuer: "Universitas Negeri Surabaya (UNESA)",
+      date: "Juli 2026",
+      description: "Dokumen resmi riwayat pengalaman dan penyelesaian program akademik S1 Sistem Informasi Universitas Negeri Surabaya.",
+      fileUrl: "/SPK kuliah.pdf",
+      fileType: "pdf",
     },
   ] as Certificate[],
+
   contact: {
     headline: "HUBUNGI SAYA UNTUK PELUANG DATA ANALYST!",
-    subheadline: "Saya terbuka untuk peluang kerja Full-Time, Kontrak, maupun Magang sebagai Data Analyst / Business Intelligence Specialist.",
+    subheadline: "Saya terbuka untuk peluang kerja Full-Time, Kontrak, maupun Proyek Data Analyst / Business Intelligence Specialist.",
     email: "muhammadandhikafahrezzy@gmail.com",
     phone: "+62 851-5686-8434",
     whatsappUrl: "https://wa.me/6285156868434?text=Halo%20Andhika,%20saya%20tertarik%20dengan%20profil%20Data%20Analyst%20Anda!",
