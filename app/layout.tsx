@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ClientLayout } from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
   title: "Muhammad Andhika Fahrezzy | Data Analyst Portfolio (Retro 8-Bit)",
@@ -17,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="id" className="scroll-smooth">
       <body className="antialiased selection:bg-yellow-400 selection:text-black">
-        {children}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
