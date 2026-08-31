@@ -6,7 +6,6 @@ export interface Project {
   description: string;
   longDescription: string[];
   role: string;
-  period: string;
   tools: string[];
   highlights: string[];
   icon: "database" | "chart" | "monitor" | "gamepad";
@@ -61,7 +60,7 @@ export const PORTFOLIO_DATA = {
     graduation: "Lulus / Selesai: Juli 2026",
     gpa: "IPK 3.69 / 4.00",
     location: "Depok / Surabaya, Indonesia",
-    bio: "Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026, IPK 3.69) dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Cleaning & Preprocessing, SQL Database Querying, Pemodelan Data, dan Visualisasi Interaktif. Berpengalaman langsung mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis perkembangan koperasi, serta bersertifikasi resmi Data Analyst for Business dari Bitlabs Academy.",
+    bio: "Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026, IPK 3.69) dengan fokus keahlian kuat dalam Analisis Data Bisnis, Data Cleaning & Preprocessing, SQL Database Querying, Pemodelan Sistem Pendukung Keputusan (DSS/SPK), dan Visualisasi Interaktif Tableau. Berpengalaman langsung mengelola operasional data warehouse di Kopkar PT Astra Honda Motor, menganalisis perkembangan koperasi, serta bersertifikasi resmi Data Analyst for Business dari Bitlabs Academy.",
     stats: {
       level: 23,
       classType: "Data Analyst & BI Specialist",
@@ -77,7 +76,7 @@ export const PORTFOLIO_DATA = {
         skills: [
           { name: "SQL (MySQL / PostgreSQL)", level: 92 },
           { name: "Python (Pandas, NumPy)", level: 88 },
-          { name: "Google BigQuery", level: 82 },
+          { name: "Decision Support Systems (DSS/MOORA)", level: 90 },
           { name: "Data Cleaning & Preprocessing", level: 95 },
           { name: "Exploratory Data Analysis (EDA)", level: 90 },
           { name: "Advanced Excel (Pivot, VLOOKUP)", level: 94 },
@@ -99,16 +98,18 @@ export const PORTFOLIO_DATA = {
         title: "Desain UI/UX & Web (Nilai Tambah)",
         icon: "💻",
         skills: [
-          { name: "Figma (Dashboard Mockups)", level: 90 },
+          { name: "Figma (Web & Mobile Prototyping)", level: 92 },
+          { name: "Human-Computer Interaction (HCI)", level: 90 },
           { name: "Next.js & Tailwind CSS", level: 85 },
-          { name: "Usability Testing", level: 88 },
-          { name: "User-Centered Design", level: 90 },
+          { name: "Usability Testing & User Flow", level: 88 },
           { name: "Git / GitHub", level: 85 },
-          { name: "Stakeholder Presentation", level: 90 },
+          { name: "Wix.com & Web Layout", level: 88 },
         ],
       },
     ] as SkillCategory[],
   },
+
+  // Faithfully extracted from Portfolio UiUx Desainer.pdf and actual work experience (No Period in Projects)
   projects: [
     {
       id: "ahm-data-analytics",
@@ -123,7 +124,6 @@ export const PORTFOLIO_DATA = {
         "Melakukan pengujian usability dan kualitas data aplikasi toko online Toko AHM versi 2 dan 3.",
       ],
       role: "Data Warehouse & IT Support Intern",
-      period: "Mar 2024 - Okt 2024",
       tools: ["MySQL", "Data Cleaning", "Data Visualization", "Spreadsheet", "Inventory Analytics"],
       highlights: [
         "Analisis Perkembangan Koperasi Periode 2023-2024",
@@ -133,10 +133,31 @@ export const PORTFOLIO_DATA = {
       icon: "database",
     },
     {
+      id: "moora-vendor-picker",
+      title: "MooraVendorPicker — Decision Support System (DSS) Data Analytics",
+      category: "Data Analysis",
+      subtitle: "Sistem Pendukung Keputusan Optimasi Multi-Atribut Metode MOORA",
+      description: "Penerapan model matematika Decision Support System (DSS) metode MOORA untuk memecahkan masalah multikriteria dalam pemilihan penerima bantuan / vendor secara objektif.",
+      longDescription: [
+        "Merancang model matematis Decision Support System (DSS) berbasis metode Multi-Objective Optimization on the basis of Ratio Analysis (MOORA).",
+        "Mengolah data atribut kriteria yang saling bertentangan secara simultan untuk menghasilkan perankingan objektif dan akurat.",
+        "Merancang antarmuka web dan mobile menggunakan Figma untuk memudahkan pengambil keputusan (stakeholder) melihat hasil kalkulasi data secara interaktif dan transparan.",
+        "Mengembangkan alur input data kriteria, bobot nilai, dan visualisasi ranking keputusan.",
+      ],
+      role: "Data Analyst & UI/UX Designer",
+      tools: ["MOORA Algorithm", "Decision Support System", "Data Modeling", "Figma", "UI/UX Design"],
+      highlights: [
+        "Implementasi Algoritma Multi-Objective MOORA",
+        "Matriks Keputusan & Normalisasi Data Otomatis",
+        "Desain Antarmuka Web & Mobile Figma Responsif",
+      ],
+      icon: "database",
+    },
+    {
       id: "bitlabs-business-analytics",
       title: "Business Performance & Sales Intelligence Dashboard",
       category: "Business Intelligence",
-      subtitle: "Analisis Kinerja Bisnis, Segmentasi & Metrik Penjualan",
+      subtitle: "Analisis Kinerja Bisnis, Segmentasi & Metrik Penjualan Eksekutif",
       description: "Proyek analisis data bisnis komprehensif menggunakan SQL dan Tableau untuk mengidentifikasi tren penjualan, perilaku pelanggan, dan peluang efisiensi biaya.",
       longDescription: [
         "Mengekstrak dan mentransformasi data mentah transaksi bisnis menggunakan query SQL (Aggregations, Window Functions, JOINs).",
@@ -145,7 +166,6 @@ export const PORTFOLIO_DATA = {
         "Menyusun rekomendasi bisnis berbasis data (data-driven strategy) bagi stakeholder.",
       ],
       role: "Data Analyst Participant",
-      period: "Des 2024",
       tools: ["SQL", "Tableau", "Python", "EDA", "Business Intelligence", "Looker Studio"],
       highlights: [
         "Interactive Executive Tableau Dashboard",
@@ -155,23 +175,65 @@ export const PORTFOLIO_DATA = {
       icon: "chart",
     },
     {
-      id: "teknopolis-data-ux",
-      title: "Teknopolis - Data Flow & UI/UX Perizinan OSS",
+      id: "teknopolis-project-management",
+      title: "Teknopolis — Sistem Perizinan Pendidikan OSS & Manajemen Proyek",
       category: "UI/UX & Web",
-      subtitle: "Arsitektur Informasi & Desain Sistem Perizinan Pendidikan",
-      description: "Merancang pemodelan alur data dan antarmuka konsep layanan perizinan pendidikan yang selaras dengan regulasi Online Single Submission (OSS).",
+      subtitle: "Arsitektur Informasi & Desain Sistem Perizinan Terintegrasi OSS",
+      description: "Proyek manajemen sistem informasi semester 5. Merancang arsitektur informasi, alur data regulasi OSS, serta desain prototipe Web dan Mobile menggunakan Figma dari tahap analisis hingga peluncuran publik.",
       longDescription: [
-        "Menganalisis alur data pengajuan perizinan dan regulasi OSS untuk merancang arsitektur informasi yang efisien.",
-        "Merancang antarmuka web dan mobile dengan fokus kemudahan monitoring status berkas perizinan secara real-time.",
-        "Mengembangkan design system konsisten yang meminimalkan beban kognitif pengguna dan mempercepat waktu pengisian formulir.",
+        "Memimpin perancangan antarmuka (Designer) untuk website dan aplikasi mobile menggunakan Figma dalam konteks mata kuliah Manajemen Proyek Sistem Informasi.",
+        "Menganalisis regulasi perizinan pendidikan dan alur Online Single Submission (OSS) menjadi arsitektur informasi yang efisien dan minim friksi.",
+        "Berkolaborasi langsung dengan tim developer untuk memastikan kesesuaian implementasi desain teknis dan stabilitas prototipe.",
+        "Menyusun dokumentasi proyek, aset visual, dan memandu tahapan proyek dari analisis awal hingga rilis publik.",
       ],
-      role: "UI/UX & Information Architect",
-      period: "Agu 2023 - Sekarang",
-      tools: ["Figma", "Information Architecture", "Canva", "User Flow", "Design System"],
+      role: "UI/UX Designer & Information Architect",
+      tools: ["Figma", "Information Architecture", "Project Management", "User Flow", "Design System"],
       highlights: [
+        "Desain Dual Platform (Web & Mobile Prototype Figma)",
         "Pemodelan Alur Data Regulasi OSS",
-        "Dual Direction Interactive UI Prototype",
-        "Peningkatan Efisiensi Alur Pengajuan Izin",
+        "Pengalaman Manajemen Proyek End-to-End",
+      ],
+      icon: "monitor",
+    },
+    {
+      id: "unesa-health-care",
+      title: "Unesa Health Care — Platform Interaksi Manusia & Komputer (HCI)",
+      category: "UI/UX & Web",
+      subtitle: "Desain Antarmuka Layanan Kesehatan Kampus Interaktif & User-Centered",
+      description: "Perancangan antarmuka website dan aplikasi mobile layanan kesehatan terpadu berbasis prinsip Human-Computer Interaction (HCI) menggunakan Figma dan Wix.com.",
+      longDescription: [
+        "Menerapkan prinsip Human-Computer Interaction (HCI) untuk merancang antarmuka website dan mobile yang menarik, intuitif, dan mudah digunakan oleh mahasiswa dan staf kampus.",
+        "Mengeksplorasi hierarki visual, psikologi warna, tipografi, dan komposisi objek untuk menciptakan pengalaman pengguna yang nyaman.",
+        "Membangun prototipe interaktif di Figma serta implementasi web menggunakan Wix.com.",
+        "Melakukan usability testing untuk mengidentifikasi potensi kendala navigasi pengguna.",
+      ],
+      role: "HCI & UI/UX Designer",
+      tools: ["Figma", "Wix.com", "Human-Computer Interaction (HCI)", "UI/UX Design", "Usability Testing"],
+      highlights: [
+        "Penerapan Teori Interaksi Manusia & Komputer (HCI)",
+        "Desain Web & Mobile Responsif",
+        "Prototipe Interaktif Figma & Wix.com",
+      ],
+      icon: "monitor",
+    },
+    {
+      id: "kanaya-digital-assets",
+      title: "PT Kanaya Multi Karya — Digital Assets & Web Design",
+      category: "UI/UX & Web",
+      subtitle: "Desain Aset Digital Promosi Web Perusahaan Rental Kendaraan",
+      description: "Pembuatan 40+ materi desain poster promosi web dengan riset tren audiens, pemilihan palet warna, tipografi, dan optimalisasi tata letak web responsif.",
+      longDescription: [
+        "Merancang 40+ materi desain visual dan poster web promosi untuk PT Kanaya Multi Karya (perusahaan rental kendaraan).",
+        "Mengembangkan keahlian dalam pemilihan warna, font, layout, dan elemen desain yang selaras dengan tujuan bisnis perusahaan.",
+        "Mengoptimalkan aset grafis agar tampil tajam, cepat dimuat, dan responsif di berbagai perangkat dan browser web.",
+        "Berkolaborasi dengan tim pengembang untuk integrasi aset ke platform digital.",
+      ],
+      role: "Graphic & Web Asset Designer Intern",
+      tools: ["Figma", "Adobe Illustrator", "Canva", "Layout Optimization", "Typography & Color Harmony"],
+      highlights: [
+        "40+ Materi Desain Poster Promosi Web",
+        "Optimalisasi Aset Web Lintas Perangkat",
+        "Peningkatan Daya Tarik Visual Brand",
       ],
       icon: "monitor",
     },
@@ -222,7 +284,7 @@ export const PORTFOLIO_DATA = {
       certificateType: "image",
       points: [
         "Menyelesaikan studi S1 Sistem Informasi dengan predikat sangat memuaskan (IPK: 3.69 / 4.00) pada Juli 2026.",
-        "Fokus keilmuan mendalam: Basis Data Lanjut, Probabilitas & Statistika, Data Mining, ERP, dan Analisis Strategi Sistem Informasi.",
+        "Fokus keilmuan mendalam: Basis Data Lanjut, Probabilitas & Statistika, Data Mining, Decision Support System (DSS), ERP, dan Analisis Strategi Sistem Informasi.",
         "Menghasilkan berbagai riset dan proyek implementasi sistem informasi data analitik terintegrasi.",
       ],
     },
@@ -275,7 +337,8 @@ export const PORTFOLIO_DATA = {
     whatsappUrl: "https://wa.me/6285156868434?text=Halo%20Andhika,%20saya%20tertarik%20dengan%20profil%20Data%20Analyst%20Anda!",
     linkedin: "linkedin.com/in/andhikafahrezzy",
     linkedinUrl: "https://www.linkedin.com/in/andhikafahrezzy/",
-    githubUrl: "https://github.com",
+    github: "github.com/045AndhikaF",
+    githubUrl: "https://github.com/045AndhikaF",
     cvFilename: "CV_Muhammad_Andhika_Fahrezzy_ID.docx",
   },
 };
