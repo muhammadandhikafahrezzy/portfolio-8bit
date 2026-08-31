@@ -3,7 +3,7 @@
 import React from "react";
 import { Project } from "@/data/portfolioData";
 import { soundManager } from "./SoundManager";
-import { PixelComputer, PixelGamepad, PixelPaintBrush, PixelDatabase } from "./PixelIcons";
+import { PixelComputer, PixelGamepad, PixelPaintBrush, PixelDatabase, PixelChart } from "./PixelIcons";
 import { X, ExternalLink, CheckCircle, Calendar, User, Wrench } from "lucide-react";
 
 interface ProjectModalProps {
@@ -16,16 +16,16 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
 
   const renderIcon = () => {
     switch (project.icon) {
+      case "chart":
+        return <PixelChart className="w-12 h-12" />;
+      case "database":
+        return <PixelDatabase className="w-12 h-12" />;
       case "monitor":
         return <PixelComputer className="w-12 h-12" />;
       case "gamepad":
         return <PixelGamepad className="w-12 h-12" />;
-      case "brush":
-        return <PixelPaintBrush className="w-12 h-12" />;
-      case "database":
-        return <PixelDatabase className="w-12 h-12" />;
       default:
-        return <PixelComputer className="w-12 h-12" />;
+        return <PixelDatabase className="w-12 h-12" />;
     }
   };
 

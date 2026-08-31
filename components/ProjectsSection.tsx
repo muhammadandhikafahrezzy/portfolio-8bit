@@ -3,14 +3,14 @@
 import React, { useState } from "react";
 import { soundManager } from "./SoundManager";
 import { Project, PORTFOLIO_DATA } from "@/data/portfolioData";
-import { PixelComputer, PixelGamepad, PixelPaintBrush, PixelDatabase } from "./PixelIcons";
+import { PixelComputer, PixelGamepad, PixelPaintBrush, PixelDatabase, PixelChart } from "./PixelIcons";
 import { ProjectModal } from "./ProjectModal";
 
 export const ProjectsSection: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [activeProject, setActiveProject] = useState<Project | null>(null);
 
-  const categories = ["ALL", "UI/UX", "Data & Web", "Graphic Art"];
+  const categories = ["ALL", "Data Analysis", "Business Intelligence", "UI/UX & Web"];
 
   const filteredProjects =
     selectedCategory === "ALL"
@@ -24,16 +24,16 @@ export const ProjectsSection: React.FC = () => {
 
   const getIcon = (iconType: string) => {
     switch (iconType) {
+      case "database":
+        return <PixelDatabase className="w-10 h-10" />;
+      case "chart":
+        return <PixelChart className="w-10 h-10" />;
       case "monitor":
         return <PixelComputer className="w-10 h-10" />;
       case "gamepad":
         return <PixelGamepad className="w-10 h-10" />;
-      case "brush":
-        return <PixelPaintBrush className="w-10 h-10" />;
-      case "database":
-        return <PixelDatabase className="w-10 h-10" />;
       default:
-        return <PixelComputer className="w-10 h-10" />;
+        return <PixelDatabase className="w-10 h-10" />;
     }
   };
 

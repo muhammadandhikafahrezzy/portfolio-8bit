@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Muhammad Andhika Fahrezzy | Retro 8-Bit Portfolio",
-  description: "Portofolio Petualangan Retro 8-Bit Muhammad Andhika Fahrezzy - UI/UX Designer & Data Analyst.",
+  title: "Muhammad Andhika Fahrezzy | Data Analyst Portfolio (Retro 8-Bit)",
+  description: "Portofolio Data Analyst & Business Intelligence Muhammad Andhika Fahrezzy - SQL, Python, Tableau, Excel & Data Warehouse.",
   icons: {
     icon: "/favicon.ico",
   },

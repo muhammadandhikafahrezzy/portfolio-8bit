@@ -93,6 +93,38 @@ export const PixelBat: React.FC<{ className?: string }> = ({ className = "w-8 h-
   </svg>
 );
 
+export const PixelDatabase: React.FC<{ className?: string }> = ({ className = "w-10 h-10" }) => (
+  <svg viewBox="0 0 24 24" className={className} style={{ shapeRendering: "crispEdges" }}>
+    <rect x="4" y="2" width="16" height="4" fill="#38BDF8" />
+    <rect x="4" y="6" width="16" height="2" fill="#0284C7" />
+    <rect x="4" y="9" width="16" height="4" fill="#38BDF8" />
+    <rect x="4" y="13" width="16" height="2" fill="#0284C7" />
+    <rect x="4" y="16" width="16" height="4" fill="#38BDF8" />
+    <rect x="4" y="20" width="16" height="2" fill="#0284C7" />
+    {/* Lights */}
+    <rect x="16" y="3" width="2" height="2" fill="#22C55E" />
+    <rect x="16" y="10" width="2" height="2" fill="#22C55E" />
+    <rect x="16" y="17" width="2" height="2" fill="#22C55E" />
+  </svg>
+);
+
+export const PixelChart: React.FC<{ className?: string }> = ({ className = "w-10 h-10" }) => (
+  <svg viewBox="0 0 24 24" className={className} style={{ shapeRendering: "crispEdges" }}>
+    {/* Axis */}
+    <rect x="3" y="2" width="2" height="19" fill="#94A3B8" />
+    <rect x="3" y="19" width="18" height="2" fill="#94A3B8" />
+    {/* Bar 1 */}
+    <rect x="7" y="12" width="3" height="7" fill="#38BDF8" />
+    <rect x="7" y="11" width="3" height="1" fill="#0284C7" />
+    {/* Bar 2 */}
+    <rect x="12" y="7" width="3" height="12" fill="#FACC15" />
+    <rect x="12" y="6" width="3" height="1" fill="#CA8A04" />
+    {/* Bar 3 */}
+    <rect x="17" y="4" width="3" height="15" fill="#22C55E" />
+    <rect x="17" y="3" width="3" height="1" fill="#15803D" />
+  </svg>
+);
+
 export const PixelComputer: React.FC<{ className?: string }> = ({ className = "w-10 h-10" }) => (
   <svg viewBox="0 0 24 24" className={className} style={{ shapeRendering: "crispEdges" }}>
     <rect x="3" y="2" width="18" height="13" fill="#0284C7" />
@@ -131,21 +163,6 @@ export const PixelPaintBrush: React.FC<{ className?: string }> = ({ className = 
     {/* Bristles / Tip */}
     <rect x="3" y="15" width="5" height="5" fill="#EAB308" />
     <rect x="2" y="18" width="3" height="4" fill="#CA8A04" />
-  </svg>
-);
-
-export const PixelDatabase: React.FC<{ className?: string }> = ({ className = "w-10 h-10" }) => (
-  <svg viewBox="0 0 24 24" className={className} style={{ shapeRendering: "crispEdges" }}>
-    <rect x="4" y="2" width="16" height="4" fill="#38BDF8" />
-    <rect x="4" y="6" width="16" height="2" fill="#0284C7" />
-    <rect x="4" y="9" width="16" height="4" fill="#38BDF8" />
-    <rect x="4" y="13" width="16" height="2" fill="#0284C7" />
-    <rect x="4" y="16" width="16" height="4" fill="#38BDF8" />
-    <rect x="4" y="20" width="16" height="2" fill="#0284C7" />
-    {/* Lights */}
-    <rect x="16" y="3" width="2" height="2" fill="#22C55E" />
-    <rect x="16" y="10" width="2" height="2" fill="#22C55E" />
-    <rect x="16" y="17" width="2" height="2" fill="#22C55E" />
   </svg>
 );
 
