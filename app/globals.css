@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-pixel: 'Press Start 2P', monospace;
+  --font-vt323: 'VT323', monospace;
+  --font-silkscreen: 'Silkscreen', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+body {
+  background-color: #08111a;
+  color: #f8fafc;
+  font-family: var(--font-pixel);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Retro CRT Grid Background */
+.retro-grid-bg {
+  background-color: #07111b;
+  background-image: 
+    linear-gradient(to right, rgba(14, 165, 233, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(14, 165, 233, 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Subtle CRT Scanline overlay */
+.crt-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+}
+
+/* Pixel text shadows */
+.text-shadow-pixel {
+  text-shadow: 
+    3px 3px 0px #000000,
+    -1px -1px 0px #000000,
+    1px -1px 0px #000000,
+    -1px 1px 0px #000000;
+}
+
+.text-shadow-gold {
+  text-shadow: 
+    2px 2px 0px #713f12,
+    -1px -1px 0px #000000;
+}
+
+/* Pixel scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09141f;
+  border-left: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0284c7;
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
