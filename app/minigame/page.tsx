@@ -64,6 +64,8 @@ interface SnakeEnemy {
   spawnX: number;
   spawnY: number;
   wiggle: number;
+  lastTileX: number;
+  lastTileY: number;
 }
 
 export default function AndhikaHardDungeonLabyrinthPage() {
@@ -168,6 +170,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 19,
         spawnY: 1,
         wiggle: 0,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "pink_cobra",
@@ -183,6 +187,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 1,
         spawnY: 1,
         wiggle: 0.6,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "cyan_python",
@@ -198,6 +204,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 1,
         spawnY: 19,
         wiggle: 1.2,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "orange_mamba",
@@ -213,6 +221,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 19,
         spawnY: 19,
         wiggle: 1.8,
+        lastTileX: -1,
+        lastTileY: -1,
       },
     ] as SnakeEnemy[],
     powerTime: 0,
@@ -224,7 +234,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     if (r < 0 || r >= ROWS) return false;
     if (c < 0 || c >= COLS) return true; // Tunnel wrap-around
     const cell = engineRef.current.grid[r][c];
-    return cell !== 1; // 1 is wall, all other values are open paths
+    return cell !== 1; // 1 is wall, all others are open walkable paths
   };
 
   const countBits = (grid: number[][]) => {
@@ -269,6 +279,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 19,
         spawnY: 1,
         wiggle: 0,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "pink_cobra",
@@ -284,6 +296,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 1,
         spawnY: 1,
         wiggle: 0.6,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "cyan_python",
@@ -299,6 +313,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 1,
         spawnY: 19,
         wiggle: 1.2,
+        lastTileX: -1,
+        lastTileY: -1,
       },
       {
         id: "orange_mamba",
@@ -314,6 +330,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         spawnX: 19,
         spawnY: 19,
         wiggle: 1.8,
+        lastTileX: -1,
+        lastTileY: -1,
       },
     ];
     engineRef.current.powerTime = 0;
@@ -412,7 +430,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       const grid = engine.grid;
       engine.frameCount++;
 
-      // --- 1. PLAYER MOVEMENT & CORNERING ASSIST ---
+      // --- 1. PLAYER MOVEMENT & AUTO-ALIGN CORNERING ---
       const roundX = Math.round(player.x);
       const roundY = Math.round(player.y);
       const diffX = player.x - roundX;
@@ -489,7 +507,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       if (player.x < -0.5) player.x = COLS - 0.5;
       if (player.x > COLS - 0.5) player.x = -0.5;
 
-      // Collect Data Bits & Insight Crystals
+      // Collect Data Bits & Crystals
       const pCol = Math.round(player.x);
       const pRow = Math.round(player.y);
 
@@ -541,7 +559,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // --- 2. ACTIVE SNAKE CHASE ENGINE (CONTINUOUS TILE-BASED NAVIGATION) ---
+      // --- 2. ACTIVE SNAKE CHASE ENGINE (TRUE 4-WAY ARCADE NAVIGATION) ---
       const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
       const oppositeDir: Record<Direction, Direction> = {
         UP: "DOWN",
@@ -566,6 +584,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             s.mode = engine.powerTime > 0 ? "frightened" : "chase";
             s.x = s.spawnX;
             s.y = s.spawnY;
+            s.lastTileX = -1;
+            s.lastTileY = -1;
           } else {
             s.x += (dx / dist) * 0.14;
             s.y += (dy / dist) * 0.14;
@@ -573,47 +593,32 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           return;
         }
 
-        // Calculate step in current direction
-        let nextX = s.x;
-        let nextY = s.y;
-        if (s.dir === "UP") nextY -= curSpeed;
-        if (s.dir === "DOWN") nextY += curSpeed;
-        if (s.dir === "LEFT") nextX -= curSpeed;
-        if (s.dir === "RIGHT") nextX += curSpeed;
-
-        // Check if snake is crossing or reaching the next integer tile
-        let atIntersection = false;
-        if (s.dir === "LEFT" && Math.floor(s.x) !== Math.floor(nextX)) {
-          s.x = Math.floor(s.x);
-          atIntersection = true;
-        } else if (s.dir === "RIGHT" && Math.ceil(s.x) !== Math.ceil(nextX)) {
-          s.x = Math.ceil(s.x);
-          atIntersection = true;
-        } else if (s.dir === "UP" && Math.floor(s.y) !== Math.floor(nextY)) {
-          s.y = Math.floor(s.y);
-          atIntersection = true;
-        } else if (s.dir === "DOWN" && Math.ceil(s.y) !== Math.ceil(nextY)) {
-          s.y = Math.ceil(s.y);
-          atIntersection = true;
-        } else {
-          s.x = nextX;
-          s.y = nextY;
-        }
+        // 1. Move forward continuously
+        if (s.dir === "UP") s.y -= curSpeed;
+        else if (s.dir === "DOWN") s.y += curSpeed;
+        else if (s.dir === "LEFT") s.x -= curSpeed;
+        else if (s.dir === "RIGHT") s.x += curSpeed;
 
         // Tunnel Wrap
         if (s.x < -0.5) s.x = COLS - 0.5;
         if (s.x > COLS - 0.5) s.x = -0.5;
 
-        // Make turning decisions at tile intersections
-        if (atIntersection) {
-          const curCol = Math.round(s.x);
-          const curRow = Math.round(s.y);
+        // 2. Check if arrived at a new tile intersection center
+        const rX = Math.round(s.x);
+        const rY = Math.round(s.y);
+        const distToCenter = Math.hypot(s.x - rX, s.y - rY);
 
-          // Find all walkable directions not directly opposite
+        if (distToCenter <= curSpeed && (s.lastTileX !== rX || s.lastTileY !== rY)) {
+          s.lastTileX = rX;
+          s.lastTileY = rY;
+          s.x = rX; // Snap exactly to integer tile center
+          s.y = rY;
+
+          // Find all 4 walkable directions (excluding 180 degree reverse)
           const walkable = possibleDirs.filter((d) => {
             if (d === oppositeDir[s.dir]) return false;
-            let c = curCol;
-            let r = curRow;
+            let c = rX;
+            let r = rY;
             if (d === "UP") r--;
             if (d === "DOWN") r++;
             if (d === "LEFT") c--;
@@ -621,10 +626,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             return isTileWalkable(c, r);
           });
 
-          // Prevent overlapping with another active snake
+          // Anti-stacking: don't choose a tile that already has another snake
           const nonColliding = walkable.filter((d) => {
-            let c = curCol;
-            let r = curRow;
+            let c = rX;
+            let r = rY;
             if (d === "UP") r--;
             if (d === "DOWN") r++;
             if (d === "LEFT") c--;
@@ -632,7 +637,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
 
             return !snakes.some((other) => {
               if (other.id === s.id || other.mode === "eaten") return false;
-              return Math.hypot(other.x - c, other.y - r) < 1.05;
+              return Math.hypot(other.x - c, other.y - r) < 1.1;
             });
           });
 
@@ -640,12 +645,12 @@ export default function AndhikaHardDungeonLabyrinthPage() {
 
           if (candidates.length > 0) {
             if (s.mode === "frightened" || engine.powerTime > 0) {
-              // Run away from player
+              // Frightened: pick direction that maximizes distance from player
               let bestD = candidates[0];
               let maxDist = -1;
               candidates.forEach((d) => {
-                let c = curCol;
-                let r = curRow;
+                let c = rX;
+                let r = rY;
                 if (d === "UP") r--;
                 if (d === "DOWN") r++;
                 if (d === "LEFT") c--;
@@ -663,7 +668,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               let targetY = player.y;
 
               if (s.id === "pink_cobra") {
-                // Cobra anticipates 2 tiles ahead of player
+                // Cobra anticipates 2 tiles ahead
                 if (player.dir === "UP") targetY -= 2;
                 if (player.dir === "DOWN") targetY += 2;
                 if (player.dir === "LEFT") targetX -= 2;
@@ -677,8 +682,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               let bestD = candidates[0];
               let minDist = Infinity;
               candidates.forEach((d) => {
-                let c = curCol;
-                let r = curRow;
+                let c = rX;
+                let r = rY;
                 if (d === "UP") r--;
                 if (d === "DOWN") r++;
                 if (d === "LEFT") c--;
@@ -692,7 +697,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               s.dir = bestD;
             }
           } else {
-            // Dead end reverse
+            // Dead end: turn around
             s.dir = oppositeDir[s.dir];
           }
         }
@@ -724,6 +729,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
                   snk.x = snk.spawnX;
                   snk.y = snk.spawnY;
                   snk.mode = "chase";
+                  snk.lastTileX = -1;
+                  snk.lastTileY = -1;
                   snk.dir = snk.id === "red_viper" ? "LEFT" : snk.id === "pink_cobra" ? "RIGHT" : "UP";
                 });
               }
