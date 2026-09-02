@@ -138,9 +138,9 @@ export default function CertificatesPage() {
             <Link
               href="/minigame"
               onClick={() => soundManager.playClick()}
-              className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#9333ea] hover:bg-[#7e22ce] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
+              className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#15803d] hover:bg-[#166534] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
             >
-              <span>MAINKAN DATA PAC-MAN 🕹️</span>
+              <span>MAINKAN DATA KNIGHT VS ULER 🗡️🐍</span>
               <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </Link>
           </div>

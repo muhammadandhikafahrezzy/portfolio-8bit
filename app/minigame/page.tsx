@@ -11,19 +11,20 @@ import {
   Heart,
   ArrowRight,
   Sparkles,
-  Zap,
   Volume2,
   VolumeX,
+  Shield,
+  Zap,
 } from "lucide-react";
 
-// PAC-MAN MAZE DEFINITION (19 columns x 21 rows)
-// 0: Empty/Walkway (no dot)
-// 1: Wall
-// 2: Small Data Dot
-// 3: Power Pellet (Energizer)
-// 4: Ghost Gate/Door
-// 5: Ghost House Inside
-// 6: Wrap-around Tunnel
+// DATA LABYRINTH MAZE (19 cols x 21 rows)
+// 0: Empty path
+// 1: Neon Maze Wall
+// 2: Golden Data Bit (+10)
+// 3: Power Insight Crystal (+50)
+// 4: Snake Gate
+// 5: Snake Nest Inside
+// 6: Warp Tunnel
 const MAZE_TEMPLATE = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
   [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
@@ -53,48 +54,50 @@ const ROWS = 21;
 
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
 
-interface Ghost {
+interface SnakeEnemy {
   id: string;
   name: string;
-  role: string;
+  species: string;
   color: string;
+  headColor: string;
   x: number;
   y: number;
   dir: Direction;
-  targetDir: Direction;
   speed: number;
   mode: "chase" | "frightened" | "eaten";
-  house: boolean;
+  nest: boolean;
   spawnX: number;
   spawnY: number;
+  wiggle: number;
 }
 
-export default function PacmanArcadePage() {
+export default function AndhikaSnakeLabyrinthPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "gameover" | "victory">("idle");
   const [score, setScore] = useState<number>(0);
-  const [highScore, setHighScore] = useState<number>(10000);
+  const [highScore, setHighScore] = useState<number>(12500);
   const [lives, setLives] = useState<number>(3);
-  const [level, setLevel] = useState<number>(1);
-  const [frightenedTimer, setFrightenedTimer] = useState<number>(0);
-  const [dotsLeft, setDotsLeft] = useState<number>(0);
+  const [powerTimer, setPowerTimer] = useState<number>(0);
+  const [bitsLeft, setBitsLeft] = useState<number>(0);
   const [audioMuted, setAudioMuted] = useState<boolean>(false);
 
-  // High score from local storage
+  // Load High Score
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("pacman_high_score");
+      const saved = localStorage.getItem("andhika_snake_high_score");
       if (saved) setHighScore(parseInt(saved, 10));
     }
   }, []);
 
-  // Web Audio Synth for authentic Pac-Man SFX
+  // Web Audio Synthesizer
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const playWaka = useRef<boolean>(false);
+  const chompToggle = useRef<boolean>(false);
 
   const initAudio = () => {
     if (!audioCtxRef.current && typeof window !== "undefined") {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) audioCtxRef.current = new AudioCtx();
     }
   };
@@ -117,112 +120,116 @@ export default function PacmanArcadePage() {
       osc.start();
       osc.stop(ctx.currentTime + duration);
     } catch {
-      // Audio fallback silent
+      // Audio fallback
     }
   };
 
-  const playChompSound = () => {
-    playWaka.current = !playWaka.current;
-    playTone(playWaka.current ? 360 : 480, "triangle", 0.08, 0.06);
+  const playCollectBitSound = () => {
+    chompToggle.current = !chompToggle.current;
+    playTone(chompToggle.current ? 440 : 580, "triangle", 0.07, 0.06);
   };
 
-  const playPowerSound = () => {
-    playTone(600, "square", 0.2, 0.1);
-    setTimeout(() => playTone(800, "square", 0.2, 0.1), 100);
+  const playPowerCrystalSound = () => {
+    playTone(659, "square", 0.15, 0.09);
+    setTimeout(() => playTone(880, "square", 0.2, 0.09), 90);
+    setTimeout(() => playTone(1174, "square", 0.25, 0.1), 180);
   };
 
-  const playEatGhostSound = () => {
-    playTone(850, "sine", 0.25, 0.15);
+  const playDefeatSnakeSound = () => {
+    playTone(900, "sine", 0.2, 0.12);
+    setTimeout(() => playTone(1200, "sine", 0.25, 0.12), 80);
   };
 
-  const playDeathSound = () => {
-    [400, 350, 300, 250, 200, 150, 100].forEach((freq, idx) => {
-      setTimeout(() => playTone(freq, "sawtooth", 0.1, 0.12), idx * 80);
+  const playHurtSound = () => {
+    [480, 380, 280, 180, 90].forEach((f, i) => {
+      setTimeout(() => playTone(f, "sawtooth", 0.1, 0.12), i * 70);
     });
   };
 
-  // Game Engine State
+  // Game Engine Ref
   const engineRef = useRef({
     grid: MAZE_TEMPLATE.map((row) => [...row]),
-    pacman: {
-      x: 9.5,
+    player: {
+      x: 9,
       y: 16,
       dir: "NONE" as Direction,
       nextDir: "NONE" as Direction,
-      mouthAngle: 0.2,
-      mouthSpeed: 0.04,
-      speed: 0.09,
+      facing: "RIGHT" as "LEFT" | "RIGHT" | "UP" | "DOWN",
+      animStep: 0,
+      speed: 0.092,
     },
-    ghosts: [
+    snakes: [
       {
-        id: "blinky",
-        name: "BLINKY",
-        role: "NULL_POINTER",
-        color: "#ef4444",
+        id: "red_viper",
+        name: "VIPER",
+        species: "NULL_POINTER",
+        color: "#dc2626",
+        headColor: "#ef4444",
         x: 9.5,
         y: 8,
         dir: "LEFT" as Direction,
-        targetDir: "LEFT" as Direction,
-        speed: 0.075,
+        speed: 0.076,
         mode: "chase" as const,
-        house: false,
+        nest: false,
         spawnX: 9.5,
         spawnY: 8,
+        wiggle: 0,
       },
       {
-        id: "pinky",
-        name: "PINKY",
-        role: "MEMORY_LEAK",
-        color: "#ec4899",
+        id: "pink_cobra",
+        name: "COBRA",
+        species: "MEMORY_LEAK",
+        color: "#db2777",
+        headColor: "#f472b6",
         x: 8.5,
         y: 10,
         dir: "UP" as Direction,
-        targetDir: "UP" as Direction,
         speed: 0.07,
         mode: "chase" as const,
-        house: true,
+        nest: true,
         spawnX: 8.5,
         spawnY: 10,
+        wiggle: 0.5,
       },
       {
-        id: "inky",
-        name: "INKY",
-        role: "SYNTAX_ERR",
-        color: "#06b6d4",
+        id: "cyan_python",
+        name: "PYTHON",
+        species: "SYNTAX_BUG",
+        color: "#0284c7",
+        headColor: "#38bdf8",
         x: 9.5,
         y: 10,
         dir: "UP" as Direction,
-        targetDir: "UP" as Direction,
         speed: 0.068,
         mode: "chase" as const,
-        house: true,
+        nest: true,
         spawnX: 9.5,
         spawnY: 10,
+        wiggle: 1.0,
       },
       {
-        id: "clyde",
-        name: "CLYDE",
-        role: "DIRTY_DATA",
-        color: "#f97316",
+        id: "orange_mamba",
+        name: "MAMBA",
+        species: "DIRTY_DATA",
+        color: "#ea580c",
+        headColor: "#fb923c",
         x: 10.5,
         y: 10,
         dir: "UP" as Direction,
-        targetDir: "UP" as Direction,
         speed: 0.065,
         mode: "chase" as const,
-        house: true,
+        nest: true,
         spawnX: 10.5,
         spawnY: 10,
+        wiggle: 1.5,
       },
-    ] as Ghost[],
-    frightenedTime: 0,
-    ghostsEatenCombo: 0,
-    animFrame: 0,
-    lastFrameTime: 0,
+    ] as SnakeEnemy[],
+    powerTime: 0,
+    snakesDefeatedCombo: 0,
+    frameCount: 0,
   });
 
-  // Calculate total dots
-  const countDots = (grid: number[][]) => {
+  const countBits = (grid: number[][]) => {
     let count = 0;
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
@@ -237,44 +244,40 @@ export default function PacmanArcadePage() {
     initAudio();
     soundManager.playLevelUp();
     const newGrid = MAZE_TEMPLATE.map((row) => [...row]);
-    const totalDots = countDots(newGrid);
+    const total = countBits(newGrid);
 
     engineRef.current.grid = newGrid;
-    engineRef.current.pacman = {
+    engineRef.current.player = {
       x: 9,
       y: 16,
       dir: "NONE",
       nextDir: "NONE",
-      mouthAngle: 0.2,
-      mouthSpeed: 0.04,
-      speed: 0.09,
+      facing: "RIGHT",
+      animStep: 0,
+      speed: 0.092,
     };
-    engineRef.current.ghosts.forEach((g) => {
-      g.x = g.spawnX;
-      g.y = g.spawnY;
-      g.mode = "chase";
-      g.house = g.id !== "blinky";
-      g.dir = g.id === "blinky" ? "LEFT" : "UP";
+    engineRef.current.snakes.forEach((s) => {
+      s.x = s.spawnX;
+      s.y = s.spawnY;
+      s.mode = "chase";
+      s.nest = s.id !== "red_viper";
+      s.dir = s.id === "red_viper" ? "LEFT" : "UP";
     });
-    engineRef.current.frightenedTime = 0;
-    engineRef.current.ghostsEatenCombo = 0;
+    engineRef.current.powerTime = 0;
+    engineRef.current.snakesDefeatedCombo = 0;
 
     setScore(0);
     setLives(3);
-    setLevel(1);
-    setDotsLeft(totalDots);
+    setBitsLeft(total);
     setGameState("playing");
   }, []);
 
-  // Direction Helper
   const setNextDirection = (dir: Direction) => {
-    engineRef.current.pacman.nextDir = dir;
-    if (gameState === "idle") {
-      startGame();
-    }
+    engineRef.current.player.nextDir = dir;
+    if (gameState === "idle") startGame();
   };
 
-  // Keyboard Event Listeners
+  // Keyboard Controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -337,7 +340,7 @@ export default function PacmanArcadePage() {
     touchStartPos.current = null;
   };
 
-  // Wall collision check
+  // Wall collisions
   const isWall = (x: number, y: number, allowGate = false) => {
     const col = Math.floor(x);
     const row = Math.floor(y);
@@ -366,7 +369,7 @@ export default function PacmanArcadePage() {
   useEffect(() => {
     if (gameState !== "playing") return;
 
-    let animationFrameId: number;
+    let animId: number;
 
     const gameLoop = () => {
       const canvas = canvasRef.current;
@@ -375,96 +378,90 @@ export default function PacmanArcadePage() {
       if (!ctx) return;
 
       const engine = engineRef.current;
-      const pacman = engine.pacman;
-      const ghosts = engine.ghosts;
+      const player = engine.player;
+      const snakes = engine.snakes;
       const grid = engine.grid;
+      engine.frameCount++;
 
-      // --- 1. UPDATE PAC-MAN ---
-      // Try turning into next direction if aligned
-      const isAlignedX = Math.abs(pacman.x - Math.round(pacman.x)) < 0.15;
-      const isAlignedY = Math.abs(pacman.y - Math.round(pacman.y)) < 0.15;
+      // --- 1. UPDATE PLAYER (ANDHIKA KNIGHT) ---
+      const isAlignedX = Math.abs(player.x - Math.round(player.x)) < 0.15;
+      const isAlignedY = Math.abs(player.y - Math.round(player.y)) < 0.15;
 
-      if (pacman.nextDir !== "NONE" && isAlignedX && isAlignedY) {
-        if (canMove(Math.round(pacman.x), Math.round(pacman.y), pacman.nextDir)) {
-          pacman.x = Math.round(pacman.x);
-          pacman.y = Math.round(pacman.y);
-          pacman.dir = pacman.nextDir;
-          pacman.nextDir = "NONE";
+      if (player.nextDir !== "NONE" && isAlignedX && isAlignedY) {
+        if (canMove(Math.round(player.x), Math.round(player.y), player.nextDir)) {
+          player.x = Math.round(player.x);
+          player.y = Math.round(player.y);
+          player.dir = player.nextDir;
+          player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
+          player.nextDir = "NONE";
         }
       }
 
-      // Move in current direction
-      if (canMove(pacman.x, pacman.y, pacman.dir)) {
-        if (pacman.dir === "UP") pacman.y -= pacman.speed;
-        if (pacman.dir === "DOWN") pacman.y += pacman.speed;
-        if (pacman.dir === "LEFT") pacman.x -= pacman.speed;
-        if (pacman.dir === "RIGHT") pacman.x += pacman.speed;
-
-        // Animate mouth
-        pacman.mouthAngle += pacman.mouthSpeed;
-        if (pacman.mouthAngle > 0.45 || pacman.mouthAngle < 0.05) {
-          pacman.mouthSpeed = -pacman.mouthSpeed;
-        }
+      // Move player
+      if (canMove(player.x, player.y, player.dir)) {
+        if (player.dir === "UP") player.y -= player.speed;
+        if (player.dir === "DOWN") player.y += player.speed;
+        if (player.dir === "LEFT") player.x -= player.speed;
+        if (player.dir === "RIGHT") player.x += player.speed;
+        player.animStep = (player.animStep + 0.2) % 4;
       }
 
-      // Tunnel Wrap-Around
-      if (pacman.x < -0.5) pacman.x = COLS - 0.5;
-      if (pacman.x > COLS - 0.5) pacman.x = -0.5;
+      // Tunnel Wrap
+      if (player.x < -0.5) player.x = COLS - 0.5;
+      if (player.x > COLS - 0.5) player.x = -0.5;
 
-      // Eat Data Dots & Energizers
-      const curCol = Math.round(pacman.x);
-      const curRow = Math.round(pacman.y);
+      // Collect Data Bits & Insight Crystals
+      const pCol = Math.round(player.x);
+      const pRow = Math.round(player.y);
 
-      if (curRow >= 0 && curRow < ROWS && curCol >= 0 && curCol < COLS) {
-        const cell = grid[curRow][curCol];
+      if (pRow >= 0 && pRow < ROWS && pCol >= 0 && pCol < COLS) {
+        const cell = grid[pRow][pCol];
         if (cell === 2) {
-          // Small Dot
-          grid[curRow][curCol] = 0;
+          grid[pRow][pCol] = 0;
           setScore((prev) => {
-            const nextScore = prev + 10;
-            if (nextScore > highScore) {
-              setHighScore(nextScore);
-              if (typeof window !== "undefined") localStorage.setItem("pacman_high_score", nextScore.toString());
+            const next = prev + 10;
+            if (next > highScore) {
+              setHighScore(next);
+              if (typeof window !== "undefined")
+                localStorage.setItem("andhika_snake_high_score", next.toString());
             }
-            return nextScore;
+            return next;
           });
-          playChompSound();
-          setDotsLeft((prev) => {
-            const nextDots = prev - 1;
-            if (nextDots <= 0) {
-              // Victory Stage Clear!
+          playCollectBitSound();
+          setBitsLeft((prev) => {
+            const next = prev - 1;
+            if (next <= 0) {
               setGameState("victory");
-              confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+              confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
               soundManager.playVictory();
             }
-            return nextDots;
+            return next;
           });
         } else if (cell === 3) {
-          // Power Pellet (Energizer)
-          grid[curRow][curCol] = 0;
+          grid[pRow][pCol] = 0;
           setScore((prev) => prev + 50);
-          playPowerSound();
-          engine.frightenedTime = 400; // ~7 seconds
-          engine.ghostsEatenCombo = 0;
-          ghosts.forEach((g) => {
-            if (g.mode !== "eaten") g.mode = "frightened";
+          playPowerCrystalSound();
+          engine.powerTime = 420; // ~7 seconds
+          engine.snakesDefeatedCombo = 0;
+          snakes.forEach((s) => {
+            if (s.mode !== "eaten") s.mode = "frightened";
           });
-          setDotsLeft((prev) => prev - 1);
+          setBitsLeft((prev) => prev - 1);
         }
       }
 
-      // Frightened Timer Update
-      if (engine.frightenedTime > 0) {
-        engine.frightenedTime--;
-        setFrightenedTimer(engine.frightenedTime);
-        if (engine.frightenedTime === 0) {
-          ghosts.forEach((g) => {
-            if (g.mode === "frightened") g.mode = "chase";
+      // Power Timer
+      if (engine.powerTime > 0) {
+        engine.powerTime--;
+        setPowerTimer(engine.powerTime);
+        if (engine.powerTime === 0) {
+          snakes.forEach((s) => {
+            if (s.mode === "frightened") s.mode = "chase";
           });
         }
       }
 
-      // --- 2. UPDATE GHOSTS ---
+      // --- 2. UPDATE SNAKES (ULER MONSTERS) ---
       const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
       const oppositeDir: Record<Direction, Direction> = {
         UP: "DOWN",
@@ -474,151 +471,144 @@ export default function PacmanArcadePage() {
         NONE: "NONE",
       };
 
-      ghosts.forEach((g) => {
-        // Ghost House Exit Logic
-        if (g.house) {
-          g.y -= 0.03;
-          if (g.y <= 8.5) {
-            g.house = false;
-            g.y = 8;
-            g.dir = "LEFT";
+      snakes.forEach((s) => {
+        s.wiggle += 0.2;
+
+        if (s.nest) {
+          s.y -= 0.03;
+          if (s.y <= 8.5) {
+            s.nest = false;
+            s.y = 8;
+            s.dir = "LEFT";
           }
           return;
         }
 
-        // Return home if eaten
-        if (g.mode === "eaten") {
-          const dx = g.spawnX - g.x;
-          const dy = g.spawnY - g.y;
+        if (s.mode === "eaten") {
+          const dx = s.spawnX - s.x;
+          const dy = s.spawnY - s.y;
           const dist = Math.hypot(dx, dy);
           if (dist < 0.5) {
-            g.mode = "chase";
-            g.x = g.spawnX;
-            g.y = g.spawnY;
+            s.mode = "chase";
+            s.x = s.spawnX;
+            s.y = s.spawnY;
           } else {
-            g.x += (dx / dist) * 0.12;
-            g.y += (dy / dist) * 0.12;
+            s.x += (dx / dist) * 0.12;
+            s.y += (dy / dist) * 0.12;
           }
           return;
         }
 
-        // Choose Direction at Intersection
-        const gAlignedX = Math.abs(g.x - Math.round(g.x)) < 0.12;
-        const gAlignedY = Math.abs(g.y - Math.round(g.y)) < 0.12;
+        const sAlignedX = Math.abs(s.x - Math.round(s.x)) < 0.12;
+        const sAlignedY = Math.abs(s.y - Math.round(s.y)) < 0.12;
 
-        if (gAlignedX && gAlignedY) {
-          g.x = Math.round(g.x);
-          g.y = Math.round(g.y);
+        if (sAlignedX && sAlignedY) {
+          s.x = Math.round(s.x);
+          s.y = Math.round(s.y);
 
           const validDirs = possibleDirs.filter(
-            (d) => d !== oppositeDir[g.dir] && canMove(g.x, g.y, d, false)
+            (d) => d !== oppositeDir[s.dir] && canMove(s.x, s.y, d, false)
           );
 
           if (validDirs.length > 0) {
-            if (g.mode === "frightened") {
-              // Random direction when frightened
-              g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+            if (s.mode === "frightened") {
+              s.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
             } else {
-              // Intelligent Chase Target (Blinky chases pacman directly, others slightly wander)
-              let targetX = pacman.x;
-              let targetY = pacman.y;
+              let targetX = player.x;
+              let targetY = player.y;
 
-              if (g.id === "pinky") {
-                if (pacman.dir === "UP") targetY -= 3;
-                if (pacman.dir === "DOWN") targetY += 3;
-                if (pacman.dir === "LEFT") targetX -= 3;
-                if (pacman.dir === "RIGHT") targetX += 3;
-              } else if (g.id === "clyde") {
-                const dist = Math.hypot(g.x - pacman.x, g.y - pacman.y);
+              if (s.id === "pink_cobra") {
+                if (player.dir === "UP") targetY -= 3;
+                if (player.dir === "DOWN") targetY += 3;
+                if (player.dir === "LEFT") targetX -= 3;
+                if (player.dir === "RIGHT") targetX += 3;
+              } else if (s.id === "orange_mamba") {
+                const dist = Math.hypot(s.x - player.x, s.y - player.y);
                 if (dist < 4) {
                   targetX = 1;
                   targetY = 19;
                 }
               }
 
-              // Pick direction with shortest Euclidean distance
               let bestDir = validDirs[0];
               let minDist = Infinity;
 
               validDirs.forEach((d) => {
-                let testX = g.x;
-                let testY = g.y;
+                let testX = s.x;
+                let testY = s.y;
                 if (d === "UP") testY -= 1;
                 if (d === "DOWN") testY += 1;
                 if (d === "LEFT") testX -= 1;
                 if (d === "RIGHT") testX += 1;
 
-                const dDist = Math.hypot(testX - targetX, testY - targetY);
-                if (dDist < minDist) {
-                  minDist = dDist;
+                const dist = Math.hypot(testX - targetX, testY - targetY);
+                if (dist < minDist) {
+                  minDist = dist;
                   bestDir = d;
                 }
               });
 
-              g.dir = bestDir;
+              s.dir = bestDir;
             }
-          } else if (canMove(g.x, g.y, oppositeDir[g.dir])) {
-            g.dir = oppositeDir[g.dir];
+          } else if (canMove(s.x, s.y, oppositeDir[s.dir])) {
+            s.dir = oppositeDir[s.dir];
           }
         }
 
-        // Move Ghost
-        const curSpeed = g.mode === "frightened" ? g.speed * 0.6 : g.speed;
-        if (g.dir === "UP") g.y -= curSpeed;
-        if (g.dir === "DOWN") g.y += curSpeed;
-        if (g.dir === "LEFT") g.x -= curSpeed;
-        if (g.dir === "RIGHT") g.x += curSpeed;
+        const curSpeed = s.mode === "frightened" ? s.speed * 0.55 : s.speed;
+        if (s.dir === "UP") s.y -= curSpeed;
+        if (s.dir === "DOWN") s.y += curSpeed;
+        if (s.dir === "LEFT") s.x -= curSpeed;
+        if (s.dir === "RIGHT") s.x += curSpeed;
 
-        // Tunnel Wrap
-        if (g.x < -0.5) g.x = COLS - 0.5;
-        if (g.x > COLS - 0.5) g.x = -0.5;
+        if (s.x < -0.5) s.x = COLS - 0.5;
+        if (s.x > COLS - 0.5) s.x = -0.5;
 
-        // --- 3. PAC-MAN & GHOST COLLISION ---
-        const distToPacman = Math.hypot(g.x - pacman.x, g.y - pacman.y);
-        if (distToPacman < 0.65) {
-          if (g.mode === "frightened") {
-            // Eat Ghost!
-            g.mode = "eaten";
-            engine.ghostsEatenCombo++;
-            const bonus = 200 * Math.pow(2, engine.ghostsEatenCombo - 1);
+        // Collision with player
+        const distToPlayer = Math.hypot(s.x - player.x, s.y - player.y);
+        if (distToPlayer < 0.65) {
+          if (s.mode === "frightened") {
+            // Defeat Snake!
+            s.mode = "eaten";
+            engine.snakesDefeatedCombo++;
+            const bonus = 200 * Math.pow(2, engine.snakesDefeatedCombo - 1);
             setScore((prev) => prev + bonus);
-            playEatGhostSound();
-          } else if (g.mode === "chase") {
-            // Pac-Man Hit by Ghost!
-            playDeathSound();
+            playDefeatSnakeSound();
+          } else if (s.mode === "chase") {
+            // Player hit by Snake!
+            playHurtSound();
             setLives((prev) => {
-              const nextLives = prev - 1;
-              if (nextLives <= 0) {
+              const next = prev - 1;
+              if (next <= 0) {
                 setGameState("gameover");
                 soundManager.playDeath();
               } else {
-                // Respawn Pacman and Ghosts
-                pacman.x = 9;
-                pacman.y = 16;
-                pacman.dir = "NONE";
-                pacman.nextDir = "NONE";
-                ghosts.forEach((gh) => {
-                  gh.x = gh.spawnX;
-                  gh.y = gh.spawnY;
-                  gh.mode = "chase";
-                  gh.house = gh.id !== "blinky";
-                  gh.dir = gh.id === "blinky" ? "LEFT" : "UP";
+                player.x = 9;
+                player.y = 16;
+                player.dir = "NONE";
+                player.nextDir = "NONE";
+                snakes.forEach((snk) => {
+                  snk.x = snk.spawnX;
+                  snk.y = snk.spawnY;
+                  snk.mode = "chase";
+                  snk.nest = snk.id !== "red_viper";
+                  snk.dir = snk.id === "red_viper" ? "LEFT" : "UP";
                 });
               }
-              return nextLives;
+              return next;
             });
           }
         }
       });
 
-      // --- 4. RENDER CANVAS (8-BIT RETRO PAC-MAN) ---
-      ctx.fillStyle = "#000000";
+      // --- 3. RENDER CANVAS (8-BIT PIXEL ART) ---
+      ctx.fillStyle = "#0a1120";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cellW = canvas.width / COLS;
       const cellH = canvas.height / ROWS;
 
-      // Draw Maze Walls & Pellets
+      // Draw Maze Walls & Data Bits
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const cell = grid[r][c];
@@ -626,143 +616,233 @@ export default function PacmanArcadePage() {
           const py = r * cellH;
 
           if (cell === 1) {
-            // Blue Neon 8-Bit Wall
+            // Neon Tech Labyrinth Wall
             ctx.fillStyle = "#1e3a8a";
             ctx.fillRect(px, py, cellW, cellH);
-            ctx.strokeStyle = "#3b82f6";
+            ctx.strokeStyle = "#38bdf8";
             ctx.lineWidth = 1.5;
             ctx.strokeRect(px + 2, py + 2, cellW - 4, cellH - 4);
           } else if (cell === 4) {
-            // Ghost Gate
-            ctx.fillStyle = "#f472b6";
+            // Snake Nest Gate
+            ctx.fillStyle = "#fb923c";
             ctx.fillRect(px, py + cellH / 2 - 2, cellW, 4);
           } else if (cell === 2) {
-            // Small Data Dot
+            // Golden Data Bit (Square pixel coin)
+            ctx.fillStyle = "#facc15";
+            ctx.fillRect(px + cellW * 0.35, py + cellH * 0.35, cellW * 0.3, cellH * 0.3);
             ctx.fillStyle = "#fef08a";
-            ctx.beginPath();
-            ctx.arc(px + cellW / 2, py + cellH / 2, cellW * 0.14, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillRect(px + cellW * 0.35, py + cellH * 0.35, cellW * 0.1, cellH * 0.1);
           } else if (cell === 3) {
-            // Power Pellet (Pulsing Big Dot)
-            const pulse = (Math.sin(Date.now() / 150) + 1) / 2;
-            ctx.fillStyle = pulse > 0.3 ? "#fde047" : "#fbbf24";
+            // Power Insight Crystal (Pulsing Diamond Gem)
+            const pulse = (Math.sin(Date.now() / 120) + 1) / 2;
+            const size = cellW * (0.35 + pulse * 0.1);
+            const cx = px + cellW / 2;
+            const cy = py + cellH / 2;
+
+            ctx.fillStyle = pulse > 0.4 ? "#38bdf8" : "#818cf8";
             ctx.beginPath();
-            ctx.arc(px + cellW / 2, py + cellH / 2, cellW * 0.35, 0, Math.PI * 2);
+            ctx.moveTo(cx, cy - size);
+            ctx.lineTo(cx + size, cy);
+            ctx.lineTo(cx, cy + size);
+            ctx.lineTo(cx - size, cy);
+            ctx.closePath();
             ctx.fill();
+
+            // Gem shine
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(cx - 1, cy - size * 0.5, 2, 2);
           }
         }
       }
 
-      // Draw Pac-Man
-      const pacPx = (pacman.x + 0.5) * cellW;
-      const pacPy = (pacman.y + 0.5) * cellH;
-      const pacRadius = cellW * 0.48;
-
-      let rotation = 0;
-      if (pacman.dir === "RIGHT") rotation = 0;
-      if (pacman.dir === "DOWN") rotation = Math.PI / 2;
-      if (pacman.dir === "LEFT") rotation = Math.PI;
-      if (pacman.dir === "UP") rotation = (Math.PI * 3) / 2;
+      // --- 4. DRAW PLAYER: ANDHIKA KNIGHT (GREEN TUNIC) ---
+      const pX = (player.x + 0.5) * cellW;
+      const pY = (player.y + 0.5) * cellH;
+      const pHeroSize = cellW * 0.95;
 
       ctx.save();
-      ctx.translate(pacPx, pacPy);
-      ctx.rotate(rotation);
+      ctx.translate(pX, pY);
 
+      // Power Crystal Golden Aura
+      if (engine.powerTime > 0) {
+        ctx.fillStyle = engine.frameCount % 4 < 2 ? "rgba(250, 204, 21, 0.4)" : "rgba(56, 189, 248, 0.4)";
+        ctx.beginPath();
+        ctx.arc(0, 0, pHeroSize * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // If moving left, flip sprite
+      if (player.facing === "LEFT") {
+        ctx.scale(-1, 1);
+      }
+
+      const s = pHeroSize / 24; // Scale relative to 24x24 pixel grid
+
+      // 1. Hair / Brown Cap (x: -4..4, y: -10..-7)
+      ctx.fillStyle = "#854d0e";
+      ctx.fillRect(-4 * s, -11 * s, 8 * s, 3 * s);
+      ctx.fillStyle = "#a16207";
+      ctx.fillRect(-5 * s, -9 * s, 10 * s, 3 * s);
+
+      // 2. Face & Eyes
+      ctx.fillStyle = "#fed7aa";
+      ctx.fillRect(-5 * s, -6 * s, 9 * s, 4 * s);
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(-2 * s, -5 * s, 2 * s, 2 * s);
+      ctx.fillRect(2 * s, -5 * s, 2 * s, 2 * s);
+
+      // 3. Green Tunic Body
+      ctx.fillStyle = "#16a34a";
+      ctx.fillRect(-5 * s, -2 * s, 10 * s, 6 * s);
+
+      // 4. Brown Belt with Gold Buckle
+      ctx.fillStyle = "#854d0e";
+      ctx.fillRect(-5 * s, 1 * s, 10 * s, 2 * s);
       ctx.fillStyle = "#facc15";
-      ctx.beginPath();
-      ctx.arc(
-        0,
-        0,
-        pacRadius,
-        pacman.mouthAngle * Math.PI,
-        (2 - pacman.mouthAngle) * Math.PI
-      );
-      ctx.lineTo(0, 0);
-      ctx.fill();
+      ctx.fillRect(-1 * s, 1 * s, 2 * s, 2 * s);
 
-      // Pacman Eye
-      ctx.fillStyle = "#000000";
-      ctx.beginPath();
-      ctx.arc(0, -pacRadius * 0.45, pacRadius * 0.15, 0, Math.PI * 2);
-      ctx.fill();
+      // 5. Shield (Left side)
+      ctx.fillStyle = "#0284c7";
+      ctx.fillRect(-8 * s, -2 * s, 3 * s, 6 * s);
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(-7 * s, -1 * s, 2 * s, 4 * s);
+
+      // 6. Sword (Right side)
+      ctx.fillStyle = "#e2e8f0";
+      ctx.fillRect(5 * s, -6 * s, 2 * s, 8 * s);
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(4 * s, 2 * s, 4 * s, 2 * s);
+
+      // 7. Boots (Animated step)
+      const legOffset = Math.sin(player.animStep * Math.PI) * 2 * s;
+      ctx.fillStyle = "#78350f";
+      ctx.fillRect(-4 * s, 5 * s + legOffset, 3 * s, 4 * s);
+      ctx.fillRect(1 * s, 5 * s - legOffset, 3 * s, 4 * s);
 
       ctx.restore();
 
-      // Draw Ghosts
-      ghosts.forEach((g) => {
-        const ghPx = (g.x + 0.5) * cellW;
-        const ghPy = (g.y + 0.5) * cellH;
-        const ghRadius = cellW * 0.46;
+      // --- 5. DRAW SNAKES (ULER 8-BIT) ---
+      snakes.forEach((snk) => {
+        const sPx = (snk.x + 0.5) * cellW;
+        const sPy = (snk.y + 0.5) * cellH;
+        const sScale = cellW * 0.44;
 
         ctx.save();
-        ctx.translate(ghPx, ghPy);
+        ctx.translate(sPx, sPy);
 
-        if (g.mode === "eaten") {
-          // Just eyes
+        if (snk.mode === "eaten") {
+          // Defeated Snake Spirit (Slithering Eyes)
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
-          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
-          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
+          ctx.arc(-sScale * 0.35, -sScale * 0.2, sScale * 0.3, 0, Math.PI * 2);
+          ctx.arc(sScale * 0.35, -sScale * 0.2, sScale * 0.3, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = "#2563eb";
+          ctx.fillStyle = "#3b82f6";
           ctx.beginPath();
-          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.14, 0, Math.PI * 2);
-          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.14, 0, Math.PI * 2);
+          ctx.arc(-sScale * 0.35, -sScale * 0.2, sScale * 0.15, 0, Math.PI * 2);
+          ctx.arc(sScale * 0.35, -sScale * 0.2, sScale * 0.15, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          // Ghost Body
-          let ghostBodyColor = g.color;
-          if (g.mode === "frightened") {
-            const isFlashing = engine.frightenedTime < 80 && Math.floor(engine.frightenedTime / 10) % 2 === 0;
-            ghostBodyColor = isFlashing ? "#ffffff" : "#1d4ed8";
+          let sBodyCol = snk.color;
+          let sHeadCol = snk.headColor;
+
+          if (snk.mode === "frightened") {
+            const isFlash = engine.powerTime < 80 && Math.floor(engine.powerTime / 10) % 2 === 0;
+            sBodyCol = isFlash ? "#ffffff" : "#1e40af";
+            sHeadCol = isFlash ? "#93c5fd" : "#3b82f6";
           }
 
-          ctx.fillStyle = ghostBodyColor;
-          ctx.beginPath();
-          ctx.arc(0, -ghRadius * 0.1, ghRadius, Math.PI, 0, false);
-          ctx.lineTo(ghRadius, ghRadius * 0.8);
+          // Draw 4 Slithering Snake Segments
+          const wiggleAmp = Math.sin(snk.wiggle) * (sScale * 0.35);
 
-          // Wavy Skirt
-          const waves = 3;
-          const waveW = (ghRadius * 2) / waves;
-          for (let i = 0; i < waves; i++) {
-            const wx = ghRadius - i * waveW;
-            ctx.lineTo(wx - waveW / 2, ghRadius * 0.5);
-            ctx.lineTo(wx - waveW, ghRadius * 0.8);
+          // Tail segment
+          ctx.fillStyle = sBodyCol;
+          ctx.beginPath();
+          ctx.arc(-wiggleAmp * 0.8, sScale * 0.7, sScale * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Middle body segment
+          ctx.fillStyle = sHeadCol;
+          ctx.beginPath();
+          ctx.arc(wiggleAmp * 0.6, sScale * 0.25, sScale * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Snake Head (Oval / Rounded rectangle)
+          ctx.fillStyle = sBodyCol;
+          ctx.beginPath();
+          ctx.arc(0, -sScale * 0.2, sScale * 0.75, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Snake Scales / Crown Pattern
+          ctx.fillStyle = sHeadCol;
+          ctx.fillRect(-sScale * 0.3, -sScale * 0.5, sScale * 0.6, sScale * 0.3);
+
+          // Snake Eyes (Angry / Slit pupils or scared dizzy eyes)
+          if (snk.mode === "frightened") {
+            // Dizzy X eyes
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(-sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
+            ctx.arc(sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 1.5;
+            // X on left
+            ctx.beginPath();
+            ctx.moveTo(-sScale * 0.45, -sScale * 0.35);
+            ctx.lineTo(-sScale * 0.25, -sScale * 0.15);
+            ctx.moveTo(-sScale * 0.25, -sScale * 0.35);
+            ctx.lineTo(-sScale * 0.45, -sScale * 0.15);
+            // X on right
+            ctx.moveTo(sScale * 0.25, -sScale * 0.35);
+            ctx.lineTo(sScale * 0.45, -sScale * 0.15);
+            ctx.moveTo(sScale * 0.45, -sScale * 0.35);
+            ctx.lineTo(sScale * 0.25, -sScale * 0.15);
+            ctx.stroke();
+          } else {
+            // Slit Predator Eyes
+            ctx.fillStyle = "#fef08a";
+            ctx.beginPath();
+            ctx.arc(-sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
+            ctx.arc(sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(-sScale * 0.38, -sScale * 0.35, sScale * 0.1, sScale * 0.22);
+            ctx.fillRect(sScale * 0.28, -sScale * 0.35, sScale * 0.1, sScale * 0.22);
+
+            // Flicking Red Forked Tongue
+            const tongueFlick = Math.sin(snk.wiggle * 1.5) > 0.2;
+            if (tongueFlick) {
+              ctx.fillStyle = "#ef4444";
+              let tx = 0;
+              let ty = -sScale * 0.95;
+              if (snk.dir === "DOWN") ty = sScale * 0.6;
+              if (snk.dir === "LEFT") {
+                tx = -sScale * 0.95;
+                ty = -sScale * 0.2;
+              }
+              if (snk.dir === "RIGHT") {
+                tx = sScale * 0.95;
+                ty = -sScale * 0.2;
+              }
+
+              ctx.fillRect(tx - 1.5, ty, 3, 5);
+              ctx.fillRect(tx - 3, ty - 2, 2, 2);
+              ctx.fillRect(tx + 1, ty - 2, 2, 2);
+            }
           }
-          ctx.closePath();
-          ctx.fill();
-
-          // Ghost Eyes
-          ctx.fillStyle = g.mode === "frightened" ? "#fecdd3" : "#ffffff";
-          ctx.beginPath();
-          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
-          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Pupil looking in direction
-          let pupilDx = 0;
-          let pupilDy = 0;
-          if (g.dir === "LEFT") pupilDx = -ghRadius * 0.12;
-          if (g.dir === "RIGHT") pupilDx = ghRadius * 0.12;
-          if (g.dir === "UP") pupilDy = -ghRadius * 0.12;
-          if (g.dir === "DOWN") pupilDy = ghRadius * 0.12;
-
-          ctx.fillStyle = g.mode === "frightened" ? "#ef4444" : "#1e3a8a";
-          ctx.beginPath();
-          ctx.arc(-ghRadius * 0.35 + pupilDx, -ghRadius * 0.2 + pupilDy, ghRadius * 0.14, 0, Math.PI * 2);
-          ctx.arc(ghRadius * 0.35 + pupilDx, -ghRadius * 0.2 + pupilDy, ghRadius * 0.14, 0, Math.PI * 2);
-          ctx.fill();
         }
 
         ctx.restore();
       });
 
-      animationFrameId = requestAnimationFrame(gameLoop);
+      animId = requestAnimationFrame(gameLoop);
     };
 
-    animationFrameId = requestAnimationFrame(gameLoop);
-    return () => cancelAnimationFrame(animationFrameId);
+    animId = requestAnimationFrame(gameLoop);
+    return () => cancelAnimationFrame(animId);
   }, [gameState, highScore]);
 
   return (
@@ -770,18 +850,18 @@ export default function PacmanArcadePage() {
       {/* 8-Bit Window Header */}
       <div className="bg-[#0f172a] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[8px_8px_0px_#000]">
         {/* Title Bar */}
-        <div className="bg-[#9333ea] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
+        <div className="bg-[#15803d] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0 animate-spin" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              BONUS STAGE: DATA_PACMAN_ARCADE_8BIT.EXE
+              BONUS STAGE: ANDHIKA_DATA_LABYRINTH_VS_SNAKES.EXE
             </h1>
           </div>
           <div className="flex items-center gap-1.5 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
             <button
               onClick={() => setAudioMuted(!audioMuted)}
               title={audioMuted ? "Unmute SFX" : "Mute SFX"}
-              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#7e22ce] hover:bg-[#a855f7] text-white flex items-center justify-center border border-black cursor-pointer"
+              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#166534] hover:bg-[#22c55e] text-white flex items-center justify-center border border-black cursor-pointer"
             >
               {audioMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
             </button>
@@ -800,7 +880,7 @@ export default function PacmanArcadePage() {
           {/* Top HUD Status Bar */}
           <div className="w-full grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px] md:text-[9px]">
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-              <span className="text-slate-400 block truncate">1UP SCORE</span>
+              <span className="text-slate-400 block truncate">1UP SKOR</span>
               <span className="text-yellow-400 font-bold block truncate">{score}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
@@ -808,7 +888,7 @@ export default function PacmanArcadePage() {
               <span className="text-cyan-400 font-bold block truncate">{highScore}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-              <span className="text-slate-400 block truncate">LIVES</span>
+              <span className="text-slate-400 block truncate">NYAWA</span>
               <div className="flex items-center justify-center gap-1 text-red-500 mt-0.5">
                 {Array.from({ length: Math.max(0, lives) }).map((_, i) => (
                   <Heart key={i} className="w-3 h-3 fill-red-500 inline-block" />
@@ -816,20 +896,24 @@ export default function PacmanArcadePage() {
               </div>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-1 sm:col-span-1">
-              <span className="text-slate-400 block truncate">DATA DOTS</span>
-              <span className="text-green-400 font-bold block truncate">{dotsLeft}</span>
+              <span className="text-slate-400 block truncate">DATA BITS</span>
+              <span className="text-green-400 font-bold block truncate">{bitsLeft}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-2 sm:col-span-1">
-              <span className="text-slate-400 block truncate">ENERGIZER</span>
-              <span className={`font-bold block truncate ${frightenedTimer > 0 ? "text-cyan-300 animate-pulse" : "text-slate-500"}`}>
-                {frightenedTimer > 0 ? `ACTIVE (${Math.ceil(frightenedTimer / 60)}s)` : "READY"}
+              <span className="text-slate-400 block truncate">POWER CRYSTAL</span>
+              <span
+                className={`font-bold block truncate ${
+                  powerTimer > 0 ? "text-cyan-300 animate-pulse" : "text-slate-500"
+                }`}
+              >
+                {powerTimer > 0 ? `AKTIF (${Math.ceil(powerTimer / 60)}s)` : "READY"}
               </span>
             </div>
           </div>
 
-          {/* Arcade Cabinet Screen Area */}
+          {/* Arcade Canvas Area */}
           <div
-            className="relative bg-black border-4 border-[#1e3a8a] shadow-[0_0_15px_rgba(59,130,246,0.5)] p-1 sm:p-2 rounded-sm max-w-full overflow-hidden touch-none select-none"
+            className="relative bg-black border-4 border-[#15803d] shadow-[0_0_15px_rgba(34,197,94,0.4)] p-1 sm:p-2 rounded-sm max-w-full overflow-hidden touch-none select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -843,36 +927,36 @@ export default function PacmanArcadePage() {
             {/* Start / Idle Screen Overlay */}
             {gameState === "idle" && (
               <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
-                <span className="font-pixel text-yellow-400 text-sm sm:text-lg md:text-xl tracking-wider text-shadow-pixel">
-                  DATA PAC-MAN 8-BIT
+                <span className="font-pixel text-yellow-400 text-sm sm:text-base md:text-lg tracking-wider text-shadow-pixel">
+                  DATA KNIGHT VS ULER BUGS 🗡️🐍
                 </span>
                 <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
-                  Kumpulkan seluruh Data Pellets dan makan Power Energizer untuk mengalahkan Bug & Error!
+                  Bantu Andhika mengumpulkan seluruh Data Bits di labirin dan hindari kejaran 4 Uler Bug!
                 </p>
 
-                {/* Ghost Bug Lineup */}
-                <div className="flex items-center gap-3 py-1 font-pixel text-[7px] text-slate-300">
+                {/* Snake Monsters Lineup */}
+                <div className="flex items-center justify-center gap-2.5 py-1 font-pixel text-[7px] text-slate-300">
                   <div className="flex flex-col items-center">
-                    <span className="w-3.5 h-3.5 bg-red-500 rounded-t-full inline-block mb-0.5" />
-                    <span>BLINKY</span>
+                    <span className="w-3.5 h-3.5 bg-red-500 rounded-full inline-block mb-0.5" />
+                    <span>VIPER</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="w-3.5 h-3.5 bg-pink-500 rounded-t-full inline-block mb-0.5" />
-                    <span>PINKY</span>
+                    <span className="w-3.5 h-3.5 bg-pink-500 rounded-full inline-block mb-0.5" />
+                    <span>COBRA</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="w-3.5 h-3.5 bg-cyan-400 rounded-t-full inline-block mb-0.5" />
-                    <span>INKY</span>
+                    <span className="w-3.5 h-3.5 bg-cyan-400 rounded-full inline-block mb-0.5" />
+                    <span>PYTHON</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="w-3.5 h-3.5 bg-orange-500 rounded-t-full inline-block mb-0.5" />
-                    <span>CLYDE</span>
+                    <span className="w-3.5 h-3.5 bg-orange-500 rounded-full inline-block mb-0.5" />
+                    <span>MAMBA</span>
                   </div>
                 </div>
 
                 <button
                   onClick={startGame}
-                  className="px-5 py-2.5 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
+                  className="px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
                 >
                   <Play className="w-3.5 h-3.5 fill-black" />
                   <span>START GAME [SPACE]</span>
@@ -887,7 +971,7 @@ export default function PacmanArcadePage() {
                   GAME OVER
                 </span>
                 <p className="font-pixel text-[8px] sm:text-[9px] text-slate-300">
-                  FINAL SCORE: <span className="text-yellow-400">{score}</span>
+                  SKOR AKHIR: <span className="text-yellow-400">{score}</span>
                 </p>
                 <button
                   onClick={startGame}
@@ -906,7 +990,7 @@ export default function PacmanArcadePage() {
                   STAGE CLEAR! 🎉
                 </span>
                 <p className="font-vt323 text-lg text-slate-200">
-                  Selamat! Seluruh Data Pellets telah berhasil di-cleansing!
+                  Hebat! Seluruh Data Bits telah dibersihkan dari sarang Uler Bug!
                 </p>
                 <p className="font-pixel text-[8px] sm:text-[9px] text-yellow-300">
                   TOTAL SKOR: {score}
@@ -916,7 +1000,7 @@ export default function PacmanArcadePage() {
                   className="px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
                 >
                   <Trophy className="w-3.5 h-3.5" />
-                  <span>MAINKAN LEVEL BERIKUTNYA</span>
+                  <span>MAIN LEVEL BERIKUTNYA</span>
                 </button>
               </div>
             )}
@@ -932,7 +1016,7 @@ export default function PacmanArcadePage() {
               <div />
               <button
                 onClick={() => setNextDirection("UP")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▲
               </button>
@@ -940,34 +1024,34 @@ export default function PacmanArcadePage() {
 
               <button
                 onClick={() => setNextDirection("LEFT")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ◀
               </button>
               <button
                 onClick={() => setNextDirection("DOWN")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▼
               </button>
               <button
                 onClick={() => setNextDirection("RIGHT")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▶
               </button>
             </div>
           </div>
 
-          {/* Game Rules & Lore Box */}
+          {/* Game Lore & Instructions */}
           <div className="w-full bg-[#111f30] p-3 sm:p-4 border-2 border-black text-[7px] sm:text-[8px] font-pixel text-slate-300 space-y-1.5 text-justify sm:text-left">
             <h4 className="text-yellow-400 font-bold mb-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              <span>PANDUAN RETRO DATA PAC-MAN ARCADE:</span>
+              <span>ATURAN PETUALANGAN DATA KNIGHT VS ULER:</span>
             </h4>
-            <p>• <strong className="text-yellow-300">Data Dot (Kuning Kecil):</strong> +10 Poin per koin analitik.</p>
-            <p>• <strong className="text-cyan-300">Power Energizer (Besar Berkedip):</strong> +50 Poin & mengubah Ghost menjadi Scared Blue. Makan Ghost untuk bonus +200, +400, +800 poin!</p>
-            <p>• <strong className="text-red-400">Tunnel Warp:</strong> Lewati lorong kiri/kanan untuk teleportasi instan menghindari kejaran ghost.</p>
+            <p>• <strong className="text-yellow-300">Data Bit (Kuning Emas):</strong> +10 Poin per koin analitik.</p>
+            <p>• <strong className="text-cyan-300">Power Insight Crystal (Berlian Biru):</strong> +50 Poin & membekukan Uler menjadi Scared Blue. Sentuh uler untuk bonus combo +200, +400, +800 poin!</p>
+            <p>• <strong className="text-green-400">Tunnel Warp:</strong> Manfaatkan lorong kiri/kanan untuk teleportasi instan menghindari kepungan uler.</p>
           </div>
 
           {/* Bottom Actions */}

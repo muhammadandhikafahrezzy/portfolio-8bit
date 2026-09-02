@@ -50,11 +50,11 @@ export default function Home() {
     {
       href: "/minigame",
       stage: "BONUS STAGE",
-      title: "RETRO ARCADE 🕹️",
-      desc: "Mini-game 8-bit pengumpul koin data untuk menguji ketangkasan Anda!",
+      title: "DATA KNIGHT VS ULER 🗡️🐍",
+      desc: "Bantu karakter Andhika mengumpulkan data bits di labirin dan taklukkan 4 Uler Bug!",
       icon: <PixelGamepad className="w-5 h-5 sm:w-6 sm:h-6" />,
-      color: "border-[#9333ea] hover:border-yellow-400 bg-[#0f172a]",
-      btnBg: "bg-[#9333ea] hover:bg-[#7e22ce]",
+      color: "border-[#15803d] hover:border-yellow-400 bg-[#0f172a]",
+      btnBg: "bg-[#15803d] hover:bg-[#166534]",
     },
     {
       href: "/contact",
