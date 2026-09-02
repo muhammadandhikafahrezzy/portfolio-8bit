@@ -13,6 +13,8 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
+  Shield,
+  Zap,
 } from "lucide-react";
 
 // NEW 100% FULLY CONNECTED HARD DATA DUNGEON LABYRINTH (21 cols x 21 rows)
@@ -125,14 +127,14 @@ export default function AndhikaHardDungeonLabyrinthPage() {
   };
 
   const playPowerCrystalSound = () => {
-    playTone(700, "square", 0.12, 0.09);
-    setTimeout(() => playTone(950, "square", 0.16, 0.09), 80);
-    setTimeout(() => playTone(1300, "square", 0.22, 0.1), 160);
+    playTone(700, "square", 0.12, 0.1);
+    setTimeout(() => playTone(950, "square", 0.16, 0.1), 80);
+    setTimeout(() => playTone(1300, "square", 0.22, 0.12), 160);
   };
 
   const playDefeatSnakeSound = () => {
-    playTone(950, "sine", 0.18, 0.12);
-    setTimeout(() => playTone(1350, "sine", 0.22, 0.12), 70);
+    playTone(950, "sine", 0.18, 0.14);
+    setTimeout(() => playTone(1350, "sine", 0.22, 0.14), 70);
   };
 
   const playHurtSound = () => {
@@ -141,7 +143,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     });
   };
 
-  // Game Engine State - 4 Snakes spawn directly in 4 strategic corners!
+  // Game Engine State: 4 Snakes starting from the 4 corners of the maze
   const engineRef = useRef({
     grid: HARD_DUNGEON_MAZE.map((row) => [...row]),
     player: {
@@ -157,13 +159,13 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       {
         id: "red_viper",
         name: "VIPER",
-        species: "DIRECT_CHASER",
+        species: "DIRECT_HUNTER",
         color: "#dc2626",
         headColor: "#ef4444",
         x: 19,
         y: 1,
         dir: "LEFT" as Direction,
-        speed: 0.076,
+        speed: 0.075,
         mode: "chase" as const,
         spawnX: 19,
         spawnY: 1,
@@ -172,7 +174,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       {
         id: "pink_cobra",
         name: "COBRA",
-        species: "AMBUSH_INTERCEPTOR",
+        species: "LEAD_INTERCEPTOR",
         color: "#db2777",
         headColor: "#f472b6",
         x: 1,
@@ -187,7 +189,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       {
         id: "cyan_python",
         name: "PYTHON",
-        species: "PINCER_FLANKER",
+        species: "FLANK_PURSUER",
         color: "#0284c7",
         headColor: "#38bdf8",
         x: 1,
@@ -202,7 +204,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       {
         id: "orange_mamba",
         name: "MAMBA",
-        species: "TERRITORY_PATROL",
+        species: "SWARM_LURKER",
         color: "#ea580c",
         headColor: "#fb923c",
         x: 19,
@@ -224,7 +226,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     if (r < 0 || r >= ROWS) return false;
     if (c < 0 || c >= COLS) return true; // Tunnel wrap-around
     const cell = engineRef.current.grid[r][c];
-    return cell !== 1; // 1 is wall, everything else is walkable
+    return cell !== 1; // 1 is wall, all others are open paths
   };
 
   const countBits = (grid: number[][]) => {
@@ -266,6 +268,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     setScore(0);
     setLives(3);
     setBitsLeft(total);
+    setPowerTimer(0);
     setGameState("playing");
   }, []);
 
@@ -361,7 +364,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       const diffX = player.x - roundX;
       const diffY = player.y - roundY;
 
-      // Direction Change with Auto-Alignment
+      // Handle Direction Turning
       if (player.nextDir !== "NONE" && player.nextDir !== player.dir) {
         const isReverse =
           (player.dir === "LEFT" && player.nextDir === "RIGHT") ||
@@ -392,7 +395,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // Step Forward
+      // Step Player Forward
       const pSpeed = player.speed;
       if (player.dir === "UP") {
         const nextY = player.y - pSpeed;
@@ -432,7 +435,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       if (player.x < -0.5) player.x = COLS - 0.5;
       if (player.x > COLS - 0.5) player.x = -0.5;
 
-      // Collect Data Bits & Crystals
+      // Collect Data Bits & Insight Crystals
       const pCol = Math.round(player.x);
       const pRow = Math.round(player.y);
 
@@ -460,10 +463,11 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             return next;
           });
         } else if (cell === 3) {
+          // POWER CRYSTAL COLLECTED!
           grid[pRow][pCol] = 0;
           setScore((prev) => prev + 50);
           playPowerCrystalSound();
-          engine.powerTime = 420; // ~7 seconds
+          engine.powerTime = 480; // ~8 full seconds of invulnerability & snake defeat!
           engine.snakesDefeatedCombo = 0;
           snakes.forEach((s) => {
             if (s.mode !== "eaten") s.mode = "frightened";
@@ -472,7 +476,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // Power Timer
+      // Power Crystal Countdown
       if (engine.powerTime > 0) {
         engine.powerTime--;
         setPowerTimer(engine.powerTime);
@@ -483,7 +487,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // --- 2. SNAKE AI & SOLID INTER-SNAKE COLLISION AVOIDANCE ---
+      // --- 2. ACTIVE SNAKE CHASE ENGINE & ANTI-COLLISION SEPARATION ---
       const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
       const oppositeDir: Record<Direction, Direction> = {
         UP: "DOWN",
@@ -496,18 +500,18 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       snakes.forEach((s) => {
         s.wiggle += 0.22;
 
-        // Return to spawn corner if eaten
+        // Eaten snake returns to corner to revive
         if (s.mode === "eaten") {
           const dx = s.spawnX - s.x;
           const dy = s.spawnY - s.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < 0.5) {
-            s.mode = "chase";
+          if (dist < 0.6) {
+            s.mode = engine.powerTime > 0 ? "frightened" : "chase";
             s.x = s.spawnX;
             s.y = s.spawnY;
           } else {
-            s.x += (dx / dist) * 0.13;
-            s.y += (dy / dist) * 0.13;
+            s.x += (dx / dist) * 0.14;
+            s.y += (dy / dist) * 0.14;
           }
           return;
         }
@@ -518,11 +522,11 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         const sDiffY = Math.abs(s.y - sRoundY);
 
         // Turn decision at intersections
-        if (sDiffX < 0.08 && sDiffY < 0.08) {
+        if (sDiffX < 0.09 && sDiffY < 0.09) {
           s.x = sRoundX;
           s.y = sRoundY;
 
-          // 1. Walkable directions not directly 180 opposite
+          // 1. All valid walkable directions
           const walkableDirs = possibleDirs.filter((d) => {
             if (d === oppositeDir[s.dir]) return false;
             let checkC = sRoundX;
@@ -534,8 +538,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             return isTileWalkable(checkC, checkR);
           });
 
-          // 2. Strict Snake-on-Snake collision prevention:
-          // Filter out any direction where another active snake is currently located or heading!
+          // 2. Anti-Stacking: Don't pick directions that would collide with another active snake
           const nonCollidingDirs = walkableDirs.filter((d) => {
             let checkC = sRoundX;
             let checkR = sRoundY;
@@ -544,43 +547,50 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             if (d === "LEFT") checkC--;
             if (d === "RIGHT") checkC++;
 
-            const isOccupiedByAnotherSnake = snakes.some((other) => {
+            const hasAnotherSnake = snakes.some((other) => {
               if (other.id === s.id || other.mode === "eaten") return false;
               const distToOther = Math.hypot(other.x - checkC, other.y - checkR);
               return distToOther < 0.95;
             });
 
-            return !isOccupiedByAnotherSnake;
+            return !hasAnotherSnake;
           });
 
           const candidates = nonCollidingDirs.length > 0 ? nonCollidingDirs : walkableDirs;
 
           if (candidates.length > 0) {
-            if (s.mode === "frightened") {
-              // Run away in random direction
-              s.dir = candidates[Math.floor(Math.random() * candidates.length)];
+            if (s.mode === "frightened" || engine.powerTime > 0) {
+              // Frightened: Run away from player!
+              let bestEscapeDir = candidates[0];
+              let maxDist = -Infinity;
+
+              candidates.forEach((d) => {
+                let testC = sRoundX;
+                let testR = sRoundY;
+                if (d === "UP") testR--;
+                if (d === "DOWN") testR++;
+                if (d === "LEFT") testC--;
+                if (d === "RIGHT") testC++;
+
+                const dist = Math.hypot(testC - player.x, testR - player.y);
+                if (dist > maxDist) {
+                  maxDist = dist;
+                  bestEscapeDir = d;
+                }
+              });
+
+              s.dir = bestEscapeDir;
             } else {
-              // Smart Hunting Target
+              // ACTIVE CHASE: ALL 4 SNAKES HUNT TOWARDS THE PLAYER
               let targetX = player.x;
               let targetY = player.y;
 
               if (s.id === "pink_cobra") {
-                // Cobra ambushes 3 tiles ahead of player
-                if (player.dir === "UP") targetY -= 3;
-                if (player.dir === "DOWN") targetY += 3;
-                if (player.dir === "LEFT") targetX -= 3;
-                if (player.dir === "RIGHT") targetX += 3;
-              } else if (s.id === "cyan_python") {
-                // Python flanks from opposite side
-                targetX = player.x * 2 - snakes[0].x;
-                targetY = player.y * 2 - snakes[0].y;
-              } else if (s.id === "orange_mamba") {
-                // Mamba patrols perimeter corners and charges when close
-                const distToP = Math.hypot(s.x - player.x, s.y - player.y);
-                if (distToP > 7) {
-                  targetX = 1;
-                  targetY = 19;
-                }
+                // Cobra anticipates 1 tile ahead of player
+                if (player.dir === "UP") targetY -= 1;
+                if (player.dir === "DOWN") targetY += 1;
+                if (player.dir === "LEFT") targetX -= 1;
+                if (player.dir === "RIGHT") targetX += 1;
               }
 
               let bestDir = candidates[0];
@@ -604,12 +614,13 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               s.dir = bestDir;
             }
           } else {
+            // Dead end reverse
             s.dir = oppositeDir[s.dir];
           }
         }
 
         // Advance Snake forward
-        const curSpeed = s.mode === "frightened" ? s.speed * 0.55 : s.speed;
+        const curSpeed = (s.mode === "frightened" || engine.powerTime > 0) ? s.speed * 0.52 : s.speed;
         if (s.dir === "UP") s.y -= curSpeed;
         if (s.dir === "DOWN") s.y += curSpeed;
         if (s.dir === "LEFT") s.x -= curSpeed;
@@ -618,18 +629,20 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         if (s.x < -0.5) s.x = COLS - 0.5;
         if (s.x > COLS - 0.5) s.x = -0.5;
 
-        // Collision with player
+        // --- 3. PLAYER & SNAKE COLLISION ---
         const distToPlayer = Math.hypot(s.x - player.x, s.y - player.y);
-        if (distToPlayer < 0.65) {
-          if (s.mode === "frightened") {
-            // Defeat Snake!
-            s.mode = "eaten";
-            engine.snakesDefeatedCombo++;
-            const bonus = 200 * Math.pow(2, engine.snakesDefeatedCombo - 1);
-            setScore((prev) => prev + bonus);
-            playDefeatSnakeSound();
+        if (distToPlayer < 0.75) {
+          // IF POWER CRYSTAL ACTIVE OR SNAKE FRIGHTENED: PLAYER ALWAYS DEFEATS THE SNAKE!
+          if (engine.powerTime > 0 || s.mode === "frightened") {
+            if (s.mode !== "eaten") {
+              s.mode = "eaten";
+              engine.snakesDefeatedCombo++;
+              const bonus = 200 * Math.pow(2, Math.min(3, engine.snakesDefeatedCombo - 1));
+              setScore((prev) => prev + bonus);
+              playDefeatSnakeSound();
+            }
           } else if (s.mode === "chase") {
-            // Player hit by Snake!
+            // PLAYER HIT ONLY WHEN NO POWER CRYSTAL ACTIVE
             playHurtSound();
             setLives((prev) => {
               const next = prev - 1;
@@ -654,7 +667,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       });
 
-      // --- 3. RENDER CANVAS (ANCIENT DATA DUNGEON PIXEL ART) ---
+      // --- 4. RENDER CANVAS (ANCIENT DATA DUNGEON PIXEL ART) ---
       ctx.fillStyle = "#050b14";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -708,7 +721,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // --- 4. DRAW PLAYER (ANDHIKA KNIGHT IN GREEN) ---
+      // --- 5. DRAW PLAYER (ANDHIKA KNIGHT IN GREEN) ---
       const pX = (player.x + 0.5) * cellW;
       const pY = (player.y + 0.5) * cellH;
       const pHeroSize = cellW * 0.96;
@@ -774,7 +787,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
 
       ctx.restore();
 
-      // --- 5. DRAW SNAKES (SLITHERING & NON-OVERLAPPING) ---
+      // --- 6. DRAW SNAKES (SLITHERING & NON-OVERLAPPING) ---
       snakes.forEach((snk) => {
         const sPx = (snk.x + 0.5) * cellW;
         const sPy = (snk.y + 0.5) * cellH;
@@ -799,8 +812,8 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           let sBodyCol = snk.color;
           let sHeadCol = snk.headColor;
 
-          if (snk.mode === "frightened") {
-            const isFlash = engine.powerTime < 80 && Math.floor(engine.powerTime / 10) % 2 === 0;
+          if (snk.mode === "frightened" || engine.powerTime > 0) {
+            const isFlash = engine.powerTime < 100 && Math.floor(engine.powerTime / 12) % 2 === 0;
             sBodyCol = isFlash ? "#ffffff" : "#1e40af";
             sHeadCol = isFlash ? "#93c5fd" : "#3b82f6";
           }
@@ -831,7 +844,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           ctx.fillRect(-sScale * 0.3, -sScale * 0.5, sScale * 0.6, sScale * 0.3);
 
           // Snake Eyes
-          if (snk.mode === "frightened") {
+          if (snk.mode === "frightened" || engine.powerTime > 0) {
             // Dizzy X Eyes
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
@@ -954,10 +967,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               <span className="text-slate-400 block truncate">POWER CRYSTAL</span>
               <span
                 className={`font-bold block truncate ${
-                  powerTimer > 0 ? "text-cyan-300 animate-pulse" : "text-slate-500"
+                  powerTimer > 0 ? "text-cyan-300 animate-pulse font-bold" : "text-slate-500"
                 }`}
               >
-                {powerTimer > 0 ? `AKTIF (${Math.ceil(powerTimer / 60)}s)` : "READY"}
+                {powerTimer > 0 ? `KEBAL (${Math.ceil(powerTimer / 60)}s)` : "READY"}
               </span>
             </div>
           </div>
@@ -982,10 +995,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
                   DATA DUNGEON LABYRINTH 🗡️🐍
                 </span>
                 <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
-                  4 Uler Bug muncul dari 4 penjuru sudut dungeon dan mengepung Anda dari berbagai arah tanpa saling menabrak!
+                  4 Uler Bug aktif memburu posisi Anda! Ambil Power Crystal untuk menjadi kebal & menebas uler!
                 </p>
 
-                {/* Snake Monsters Lineup */}
+                {/* Snake Bug Lineup */}
                 <div className="flex items-center justify-center gap-2.5 py-1 font-pixel text-[7px] text-slate-300">
                   <div className="flex flex-col items-center">
                     <span className="w-3.5 h-3.5 bg-red-500 rounded-full inline-block mb-0.5" />
@@ -1098,11 +1111,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           <div className="w-full bg-[#111f30] p-3 sm:p-4 border-2 border-black text-[7px] sm:text-[8px] font-pixel text-slate-300 space-y-1.5 text-justify sm:text-left">
             <h4 className="text-yellow-400 font-bold mb-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              <span>ATURAN DATA DUNGEON (HARD MODE):</span>
+              <span>PANDUAN TAKTIK DATA DUNGEON:</span>
             </h4>
-            <p>• <strong className="text-emerald-400">4 Sudut Sarang Uler:</strong> Uler muncul langsung dari 4 sudut penjuru labirin dan bergerak mengepung Anda tanpa saling menabrak!</p>
-            <p>• <strong className="text-yellow-300">Data Bit (Kuning Emas):</strong> +10 Poin per koin analitik.</p>
-            <p>• <strong className="text-cyan-300">Power Insight Crystal (Berlian Biru):</strong> +50 Poin & membekukan Uler menjadi Scared Blue. Sentuh uler untuk bonus combo +200, +400, +800 poin!</p>
+            <p>• <strong className="text-cyan-300">Power Insight Crystal (Berlian Biru):</strong> Memberikan status <span className="text-yellow-300 font-bold">KEBAL TOTAL (~8 Detik)</span>. Sentuh uler mana pun untuk menebas dan mendapatkan bonus combo <span className="text-green-400 font-bold">+200, +400, +800, +1600 Poin</span>!</p>
+            <p>• <strong className="text-emerald-400">Pengejaran Aktif Uler:</strong> Uler aktif bergerak memburu posisi ksatria Anda dan saling menghindari tabrakan sesama uler.</p>
             <p>• <strong className="text-green-400">Tunnel Warp:</strong> Manfaatkan lorong kiri/kanan untuk teleportasi instan menghindari kepungan uler.</p>
           </div>
 
