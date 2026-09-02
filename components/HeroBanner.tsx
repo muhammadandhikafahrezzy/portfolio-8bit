@@ -48,7 +48,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0" />
             <span className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              STAGE_01: HERO_ADVENTURE_HUB.EXE
+              STAGE_01: DATA ANALYST_PORTFOLIO
             </span>
           </div>
 
@@ -135,7 +135,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
               <p className="font-pixel text-[9px] sm:text-[11px] md:text-sm text-yellow-300 tracking-wider mb-1.5 sm:mb-2 drop-shadow-[2px_2px_0px_#000000]">
                 {PORTFOLIO_DATA.hero.greeting}
               </p>
-              <h1 className="font-pixel text-lg sm:text-2xl md:text-4xl lg:text-5xl text-white tracking-wide leading-tight mb-2 sm:mb-3 text-shadow-pixel">
+              <h1 className="font-pixel text-lg sm:text-2xl md:text-4xl lg:text-5xl text-white tracking-wide leading-tight mb-2 sm:mb-3 text-shadow-pixel whitespace-pre-line">
                 <span className="text-yellow-400">{PORTFOLIO_DATA.hero.title}</span>
               </h1>
               <p className="font-vt323 text-base sm:text-xl md:text-2xl text-slate-100 mb-4 sm:mb-6 max-w-xl mx-auto tracking-wide drop-shadow-[2px_2px_0px_#000000] leading-snug">

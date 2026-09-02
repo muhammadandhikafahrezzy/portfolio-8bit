@@ -49,9 +49,9 @@ export interface SkillCategory {
 
 export const PORTFOLIO_DATA = {
   hero: {
-    greeting: "SELAMAT DATANG DI PETUALANGAN",
-    title: "DATA ANALYST PORTOFOLIO",
-    subtitle: "MENGUBAH DATA MENTAH MENJADI INSIGHT BISNIS & KEPUTUSAN STRATEGIS DALAM DUNIA 8-BIT",
+    greeting: "DATA • ANALYSIS • INSIGHT",
+    title: "DATA ANALYST\nPORTFOLIO",
+    subtitle: "Finding patterns. Answering questions. Making data useful.",
     cta: "JELAJAHI INSIGHT DATA",
     characterName: "MUHAMMAD ANDHIKA FAHREZZY",
     role: "Data Analyst & Business Intelligence",
