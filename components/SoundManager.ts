@@ -203,6 +203,11 @@ class SoundEffectManager {
     });
   }
 
+  // Game over alias
+  public playGameOver() {
+    this.playDeath();
+  }
+
   // Window Open / Close
   public playWindowOpen() {
     this.playTone(440, "triangle", 0.1, 0.08, 880);

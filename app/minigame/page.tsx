@@ -590,7 +590,7 @@ export default function PacmanArcadePage() {
               const nextLives = prev - 1;
               if (nextLives <= 0) {
                 setGameState("gameover");
-                soundManager.playGameOver();
+                soundManager.playDeath();
               } else {
                 // Respawn Pacman and Ghosts
                 pacman.x = 9;
