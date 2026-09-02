@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-// Types for Mario Engine
 interface Block {
   id: number;
   x: number;
@@ -74,7 +73,7 @@ export default function MinigamePage() {
   const [deaths, setDeaths] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(300);
 
-  // Controller states (Keyboard & Touch)
+  // Controller states
   const keys = useRef<{ left: boolean; right: boolean; jump: boolean; run: boolean }>({
     left: false,
     right: false,
@@ -82,7 +81,7 @@ export default function MinigamePage() {
     run: false,
   });
 
-  // Game Engine State (Refs for 60fps loop)
+  // Game Engine State
   const engineState = useRef({
     player: {
       x: 60,
@@ -114,13 +113,11 @@ export default function MinigamePage() {
     timerCount: 0,
   });
 
-  // Level Generator (A long, challenging Kaizo Mario stage)
   const buildLevel = () => {
     const blocks: Block[] = [];
     const enemies: Enemy[] = [];
     const levelCoins: Coin[] = [];
 
-    // Helper to add ground segment
     const addGround = (startX: number, width: number, y = 380, h = 70) => {
       blocks.push({
         id: blocks.length + 1,
@@ -132,25 +129,19 @@ export default function MinigamePage() {
       });
     };
 
-    // --- Section 1: Intro & Early Traps (0 - 800px) ---
-    addGround(0, 480); // Ground 1
-    // Question blocks & bricks
+    // --- Section 1: Intro (0 - 800px) ---
+    addGround(0, 480);
     blocks.push({ id: 101, x: 180, y: 260, w: 32, h: 32, type: "qblock", hasCoin: true });
     blocks.push({ id: 102, x: 212, y: 260, w: 32, h: 32, type: "brick" });
     blocks.push({ id: 103, x: 244, y: 260, w: 32, h: 32, type: "qblock", hasCoin: true });
     blocks.push({ id: 104, x: 212, y: 160, w: 32, h: 32, type: "qblock", hasCoin: true });
 
-    // Pipe 1 (with Piranha)
     blocks.push({ id: 105, x: 360, y: 300, w: 48, h: 80, type: "pipe" });
     enemies.push({ id: 201, x: 384, y: 270, w: 24, h: 30, type: "piranha", vx: 0, vy: 0, alive: true, originY: 300 });
-
-    // Slime on Ground 1
     enemies.push({ id: 202, x: 280, y: 350, w: 26, h: 24, type: "slime", vx: -1.2, vy: 0, alive: true });
 
-    // PIT 1: 480 to 580 (Dangerous Jump)
-    addGround(580, 400); // Ground 2
-
-    // Floating Moving Platform over Pit 1
+    // PIT 1: 480 to 580
+    addGround(580, 400);
     blocks.push({
       id: 106,
       x: 490,
@@ -163,29 +154,22 @@ export default function MinigamePage() {
       vx: 1.5,
     });
 
-    // Spikes on Ground 2
     blocks.push({ id: 107, x: 680, y: 364, w: 40, h: 16, type: "spike" });
     enemies.push({ id: 203, x: 800, y: 350, w: 26, h: 24, type: "slime", vx: -1.4, vy: 0, alive: true });
     enemies.push({ id: 204, x: 920, y: 350, w: 26, h: 24, type: "slime", vx: -1.4, vy: 0, alive: true });
 
     // --- Section 2: Flying Bats & Double Pipes (980 - 1800px) ---
-    // PIT 2: 980 to 1100
     addGround(1100, 500);
-
-    // High Brick Pathway
     blocks.push({ id: 108, x: 1140, y: 250, w: 32, h: 32, type: "brick" });
     blocks.push({ id: 109, x: 1172, y: 250, w: 32, h: 32, type: "qblock", hasCoin: true });
     blocks.push({ id: 110, x: 1204, y: 250, w: 32, h: 32, type: "brick" });
     blocks.push({ id: 111, x: 1236, y: 250, w: 32, h: 32, type: "brick" });
 
-    // Flying Bat 1
     enemies.push({ id: 205, x: 1350, y: 180, w: 28, h: 24, type: "bat", vx: -1.8, vy: 0, alive: true, originY: 180 });
-
-    // Tall Pipe 2
     blocks.push({ id: 112, x: 1420, y: 270, w: 48, h: 110, type: "pipe" });
     enemies.push({ id: 206, x: 1444, y: 240, w: 24, h: 30, type: "piranha", vx: 0, vy: 0, alive: true, originY: 270 });
 
-    // PIT 3: 1600 to 1780 (Huge Chasm with 2 Moving Platforms)
+    // PIT 3: 1600 to 1780
     blocks.push({
       id: 113,
       x: 1620,
@@ -198,28 +182,23 @@ export default function MinigamePage() {
       vx: 2.0,
     });
 
-    // --- Section 3: Kaizo Gauntlet & Precision Stairs (1780 - 2700px) ---
+    // --- Section 3: Kaizo Gauntlet (1780 - 2700px) ---
     addGround(1780, 550);
-    // Spike traps on floor
     blocks.push({ id: 114, x: 1900, y: 364, w: 48, h: 16, type: "spike" });
     blocks.push({ id: 115, x: 2100, y: 364, w: 48, h: 16, type: "spike" });
 
-    // Floating Island in sky
     blocks.push({ id: 116, x: 1960, y: 240, w: 80, h: 20, type: "ground" });
     levelCoins.push({ id: 301, x: 1980, y: 200, collected: false });
     levelCoins.push({ id: 302, x: 2020, y: 200, collected: false });
 
-    // Fast Bats
     enemies.push({ id: 207, x: 2150, y: 160, w: 28, h: 24, type: "bat", vx: -2.2, vy: 0, alive: true, originY: 160 });
     enemies.push({ id: 208, x: 2280, y: 350, w: 26, h: 24, type: "slime", vx: -1.8, vy: 0, alive: true });
 
-    // PIT 4: 2330 to 2480 (Narrow Bridge)
+    // PIT 4: 2330 to 2480
     blocks.push({ id: 117, x: 2370, y: 310, w: 44, h: 16, type: "moving", minX: 2350, maxX: 2460, vx: 2.2 });
 
-    // --- Section 4: Final Staircase & Flagpole Castle (2480 - 3300px) ---
+    // --- Section 4: Final Staircase & Castle (2480 - 3300px) ---
     addGround(2480, 820);
-
-    // Kaizo Staircase Steps
     for (let step = 0; step < 7; step++) {
       for (let hStep = 0; hStep <= step; hStep++) {
         blocks.push({
@@ -232,11 +211,8 @@ export default function MinigamePage() {
         });
       }
     }
-
-    // Flagpole block base
     blocks.push({ id: 600, x: 3040, y: 348, w: 32, h: 32, type: "brick" });
 
-    // Loose coins on the level
     [120, 200, 280, 620, 750, 1160, 1220, 1500, 2550, 2620, 2800].forEach((cx, idx) => {
       levelCoins.push({ id: 400 + idx, x: cx, y: 320, collected: false });
     });
@@ -244,7 +220,6 @@ export default function MinigamePage() {
     return { blocks, enemies, coins: levelCoins };
   };
 
-  // Start / Restart Game
   const startNewGame = (customDiff?: "standard" | "kaizo") => {
     const activeDiff = customDiff || difficulty;
     const { blocks, enemies, coins: levelCoins } = buildLevel();
@@ -288,7 +263,6 @@ export default function MinigamePage() {
     soundManager.playPowerup();
   };
 
-  // Keyboard Event Listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.current.left = true;
@@ -315,7 +289,6 @@ export default function MinigamePage() {
     };
   }, []);
 
-  // Main 60 FPS Game Loop
   useEffect(() => {
     let animId: number;
 
@@ -328,7 +301,6 @@ export default function MinigamePage() {
       const state = engineState.current;
       state.animFrame++;
 
-      // Update timer every second
       if (gameState === "playing") {
         state.timerCount++;
         if (state.timerCount >= 60) {
@@ -341,7 +313,7 @@ export default function MinigamePage() {
         }
       }
 
-      // --- 1. Physics & Logic Updates ---
+      // Physics & Logic Updates
       if (gameState === "playing" && !state.player.deadAnim && !state.flagpole.reached) {
         const p = state.player;
         const maxSpeed = keys.current.run ? 5.2 : 3.4;
@@ -349,7 +321,6 @@ export default function MinigamePage() {
         const friction = 0.82;
         const gravity = 0.58;
 
-        // Horizontal Movement
         if (keys.current.left) {
           p.vx = Math.max(p.vx - accel, -maxSpeed);
           p.facing = "left";
@@ -363,7 +334,6 @@ export default function MinigamePage() {
 
         p.x += p.vx;
 
-        // Horizontal Block Collisions
         for (const b of state.blocks) {
           if (b.type === "spike") continue;
           if (
@@ -378,24 +348,21 @@ export default function MinigamePage() {
           }
         }
 
-        // Vertical Movement (Gravity & Jump)
         if (keys.current.jump && p.grounded && !p.isJumping) {
-          p.vy = keys.current.run ? -11.5 : -10.2; // Higher jump when running!
+          p.vy = keys.current.run ? -11.5 : -10.2;
           p.grounded = false;
           p.isJumping = true;
         }
         if (!keys.current.jump && p.vy < -4) {
-          p.vy = -4; // Variable jump height release
+          p.vy = -4;
         }
 
         p.vy += gravity;
         p.y += p.vy;
         p.grounded = false;
 
-        // Vertical Block Collisions
         for (const b of state.blocks) {
           if (b.type === "spike") {
-            // Hazard collision
             if (
               p.x < b.x + b.w - 4 &&
               p.x + p.w > b.x + 4 &&
@@ -413,25 +380,20 @@ export default function MinigamePage() {
             p.y < b.y + b.h &&
             p.y + p.h > b.y
           ) {
-            // Landing on top
             if (p.vy > 0 && p.y + p.h - p.vy <= b.y + 10) {
               p.y = b.y - p.h;
               p.vy = 0;
               p.grounded = true;
               p.isJumping = false;
 
-              // Carry momentum on moving platforms
               if (b.type === "moving" && b.vx) {
                 p.x += b.vx;
               }
-            }
-            // Bumping head from below
-            else if (p.vy < 0 && p.y - p.vy >= b.y + b.h - 10) {
+            } else if (p.vy < 0 && p.y - p.vy >= b.y + b.h - 10) {
               p.y = b.y + b.h;
               p.vy = 1;
               soundManager.playBlockBump();
 
-              // Hit Question Block / Brick
               if (b.type === "qblock" && !b.hit) {
                 b.hit = true;
                 b.bouncing = 6;
@@ -440,7 +402,6 @@ export default function MinigamePage() {
                 state.score += 200;
                 setCoins(state.coinCount);
                 setScore(state.score);
-                // Spawn sparkle particle
                 state.particles.push({
                   x: b.x + 16,
                   y: b.y - 10,
@@ -457,15 +418,12 @@ export default function MinigamePage() {
           }
         }
 
-        // Fall into Bottomless Pit
         if (p.y > 450) {
           handlePlayerDeath();
         }
 
-        // Camera Follow
         state.cameraX = Math.max(0, p.x - 240);
 
-        // Update Moving Platforms
         for (const b of state.blocks) {
           if (b.type === "moving" && b.vx && b.minX !== undefined && b.maxX !== undefined) {
             b.x += b.vx;
@@ -474,7 +432,6 @@ export default function MinigamePage() {
           if (b.bouncing && b.bouncing > 0) b.bouncing -= 0.5;
         }
 
-        // Coin Collections
         for (const c of state.coins) {
           if (!c.collected && Math.abs(p.x + 10 - c.x) < 18 && Math.abs(p.y + 15 - c.y) < 22) {
             c.collected = true;
@@ -486,13 +443,11 @@ export default function MinigamePage() {
           }
         }
 
-        // Update Enemies
         for (const e of state.enemies) {
           if (!e.alive) continue;
 
           if (e.type === "slime") {
             e.x += e.vx;
-            // Check wall collision
             for (const b of state.blocks) {
               if (b.type !== "spike" && e.x < b.x + b.w && e.x + e.w > b.x && e.y < b.y + b.h && e.y + e.h > b.y) {
                 e.vx *= -1;
@@ -508,21 +463,18 @@ export default function MinigamePage() {
             }
           }
 
-          // Enemy Collision with Player
           if (
             p.x < e.x + e.w &&
             p.x + p.w > e.x &&
             p.y < e.y + e.h &&
             p.y + p.h > e.y
           ) {
-            // Stomp on Slime or Bat from above
             if (p.vy > 0 && p.y + p.h - p.vy <= e.y + 8 && e.type !== "piranha") {
               e.alive = false;
-              p.vy = -8.5; // Stomp bounce jump
+              p.vy = -8.5;
               soundManager.playStomp();
               state.score += 300;
               setScore(state.score);
-              // Spawn squash particles
               for (let k = 0; k < 6; k++) {
                 state.particles.push({
                   x: e.x + 12,
@@ -540,10 +492,8 @@ export default function MinigamePage() {
           }
         }
 
-        // Invulnerability timer countdown
         if (p.invulnerable > 0) p.invulnerable--;
 
-        // Flagpole Finish Check
         const fp = state.flagpole;
         if (!fp.reached && p.x + p.w >= fp.x && p.x <= fp.x + 16 && p.y >= fp.y) {
           fp.reached = true;
@@ -555,19 +505,16 @@ export default function MinigamePage() {
         }
       }
 
-      // Handle Flag Sliding animation
       if (state.flagpole.reached && state.flagpole.flagY < 330) {
         state.flagpole.flagY += 3;
       }
 
-      // Handle Player Death Jump Animation
       if (state.player.deadAnim) {
         state.player.deadTimer++;
         state.player.y += state.player.vy;
         state.player.vy += 0.5;
         if (state.player.deadTimer > 70) {
           if (state.lives > 0) {
-            // Respawn
             state.player.x = Math.max(60, state.cameraX - 50);
             state.player.y = 200;
             state.player.vx = 0;
@@ -580,11 +527,10 @@ export default function MinigamePage() {
         }
       }
 
-      // --- 2. Canvas Rendering ---
+      // Canvas Rendering
       ctx.clearRect(0, 0, cvs.width, cvs.height);
       const cam = state.cameraX;
 
-      // Sky Gradient
       const skyGrad = ctx.createLinearGradient(0, 0, 0, cvs.height);
       skyGrad.addColorStop(0, "#0c4a6e");
       skyGrad.addColorStop(0.5, "#0284c7");
@@ -592,7 +538,6 @@ export default function MinigamePage() {
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-      // Parallax Distant Mountains
       ctx.fillStyle = "#0369a1";
       ctx.beginPath();
       ctx.moveTo(0 - (cam * 0.2) % 400, 380);
@@ -604,7 +549,6 @@ export default function MinigamePage() {
       ctx.lineTo(900 - (cam * 0.2) % 400, 380);
       ctx.fill();
 
-      // Parallax Pixel Clouds
       ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
       [100, 450, 800, 1300, 1800, 2300, 2800].forEach((cx, idx) => {
         const cloudX = cx - cam * 0.4;
@@ -614,7 +558,6 @@ export default function MinigamePage() {
         }
       });
 
-      // Render Blocks & Hazards
       for (const b of state.blocks) {
         const bx = b.x - cam;
         const by = b.y - (b.bouncing || 0);
@@ -622,12 +565,10 @@ export default function MinigamePage() {
         if (bx + b.w < 0 || bx > cvs.width) continue;
 
         if (b.type === "ground") {
-          // Grass Top
           ctx.fillStyle = "#22c55e";
           ctx.fillRect(bx, by, b.w, 10);
           ctx.fillStyle = "#15803d";
           ctx.fillRect(bx, by + 10, b.w, 4);
-          // Dirt Body
           ctx.fillStyle = "#854d0e";
           ctx.fillRect(bx, by + 14, b.w, b.h - 14);
           ctx.strokeStyle = "#000000";
@@ -652,7 +593,6 @@ export default function MinigamePage() {
           ctx.textAlign = "center";
           ctx.fillText(b.hit ? "•" : "?", bx + 16, by + 22);
         } else if (b.type === "pipe") {
-          // Green Warp Pipe
           ctx.fillStyle = "#16a34a";
           ctx.fillRect(bx, by, b.w, b.h);
           ctx.fillStyle = "#4ade80";
@@ -662,10 +602,8 @@ export default function MinigamePage() {
           ctx.strokeStyle = "#000000";
           ctx.lineWidth = 2;
           ctx.strokeRect(bx, by, b.w, b.h);
-          // Lip
           ctx.strokeRect(bx - 2, by, b.w + 4, 16);
         } else if (b.type === "spike") {
-          // Spikes Hazard
           ctx.fillStyle = "#cbd5e1";
           for (let s = 0; s < b.w; s += 12) {
             ctx.beginPath();
@@ -677,7 +615,6 @@ export default function MinigamePage() {
             ctx.stroke();
           }
         } else if (b.type === "moving") {
-          // Moving Platform
           ctx.fillStyle = "#0284c7";
           ctx.fillRect(bx, by, b.w, b.h);
           ctx.fillStyle = "#38bdf8";
@@ -688,7 +625,6 @@ export default function MinigamePage() {
         }
       }
 
-      // Render Coins
       for (const c of state.coins) {
         if (c.collected) continue;
         const cx = c.x - cam;
@@ -704,19 +640,15 @@ export default function MinigamePage() {
         }
       }
 
-      // Render Flagpole & Castle
       const fp = state.flagpole;
       const fpx = fp.x - cam;
       if (fpx > -50 && fpx < cvs.width + 50) {
-        // Pole
         ctx.fillStyle = "#94a3b8";
         ctx.fillRect(fpx + 6, fp.y, 4, fp.h);
-        // Top sphere
         ctx.fillStyle = "#facc15";
         ctx.beginPath();
         ctx.arc(fpx + 8, fp.y, 8, 0, Math.PI * 2);
         ctx.fill();
-        // Flag
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
         ctx.moveTo(fpx + 8, fp.flagY);
@@ -726,20 +658,18 @@ export default function MinigamePage() {
         ctx.fill();
       }
 
-      // Castle
       const cas = state.castle;
       const casX = cas.x - cam;
       if (casX > -150 && casX < cvs.width + 150) {
         ctx.fillStyle = "#64748b";
         ctx.fillRect(casX, cas.y, cas.w, cas.h);
         ctx.fillStyle = "#475569";
-        ctx.fillRect(casX + 40, cas.y + 70, 40, 70); // Door
+        ctx.fillRect(casX + 40, cas.y + 70, 40, 70);
         ctx.strokeStyle = "#000";
         ctx.lineWidth = 3;
         ctx.strokeRect(casX, cas.y, cas.w, cas.h);
       }
 
-      // Render Enemies
       for (const e of state.enemies) {
         if (!e.alive) continue;
         const ex = e.x - cam;
@@ -750,7 +680,6 @@ export default function MinigamePage() {
           ctx.fillRect(ex, e.y, e.w, e.h);
           ctx.fillStyle = "#15803d";
           ctx.fillRect(ex, e.y + e.h - 4, e.w, 4);
-          // Eyes
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(ex + 4, e.y + 6, 4, 4);
           ctx.fillRect(ex + e.w - 8, e.y + 6, 4, 4);
@@ -772,17 +701,14 @@ export default function MinigamePage() {
         }
       }
 
-      // Render Player (Knight Sprite)
       const p = state.player;
       const px = p.x - cam;
       const isBlinking = p.invulnerable > 0 && Math.floor(state.animFrame / 4) % 2 === 0;
 
       if (!isBlinking) {
         ctx.save();
-        // Helmet / Hair
         ctx.fillStyle = "#a16207";
         ctx.fillRect(px + 4, p.y + 2, 14, 6);
-        // Face
         ctx.fillStyle = "#fed7aa";
         ctx.fillRect(px + 4, p.y + 8, 14, 8);
         ctx.fillStyle = "#000000";
@@ -791,24 +717,20 @@ export default function MinigamePage() {
         } else {
           ctx.fillRect(px + 6, p.y + 10, 3, 3);
         }
-        // Body / Armor
         ctx.fillStyle = "#16a34a";
         ctx.fillRect(px + 4, p.y + 16, 14, 10);
-        // Shield
         ctx.fillStyle = "#0284c7";
         if (p.facing === "right") {
           ctx.fillRect(px, p.y + 16, 4, 8);
         } else {
           ctx.fillRect(px + 18, p.y + 16, 4, 8);
         }
-        // Legs / Boots
         ctx.fillStyle = "#78350f";
         ctx.fillRect(px + 4, p.y + 26, 5, 4);
         ctx.fillRect(px + 13, p.y + 26, 5, 4);
         ctx.restore();
       }
 
-      // Render Particles
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const pt = state.particles[i];
         pt.x += pt.vx;
@@ -826,7 +748,6 @@ export default function MinigamePage() {
     return () => cancelAnimationFrame(animId);
   }, [gameState]);
 
-  // Handle Player Damage
   const handlePlayerDamage = () => {
     const state = engineState.current;
     state.lives -= 1;
@@ -836,12 +757,11 @@ export default function MinigamePage() {
       handlePlayerDeath();
     } else {
       soundManager.playBeep(220, 0.15);
-      state.player.invulnerable = 90; // 1.5s invincibility
+      state.player.invulnerable = 90;
       state.player.vy = -6;
     }
   };
 
-  // Handle Player Death
   const handlePlayerDeath = () => {
     const state = engineState.current;
     if (state.player.deadAnim) return;
@@ -851,32 +771,32 @@ export default function MinigamePage() {
     setDeaths(state.deaths);
     state.player.deadAnim = true;
     state.player.deadTimer = 0;
-    state.player.vy = -11; // Hop up before falling
+    state.player.vy = -11;
   };
 
   return (
-    <div className="py-6 px-3 md:px-6 max-w-7xl mx-auto w-full space-y-6">
+    <div className="py-4 sm:py-6 px-2 sm:px-4 md:px-6 max-w-7xl mx-auto w-full space-y-4 sm:space-y-6">
       {/* 8-Bit Window Container */}
-      <div className="bg-[#0f172a] border-4 border-black shadow-[8px_8px_0px_#000000]">
-        {/* Window Title Bar */}
-        <div className="bg-[#9333ea] px-3 py-2 flex items-center justify-between border-b-4 border-black select-none">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-yellow-300 border border-black inline-block" />
-            <h1 className="font-pixel text-[11px] md:text-sm text-white tracking-wider font-bold">
+      <div className="bg-[#0f172a] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000000] sm:shadow-[8px_8px_0px_#000000]">
+        {/* Title Bar */}
+        <div className="bg-[#9333ea] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-300 border border-black inline-block flex-shrink-0" />
+            <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
               ARCADE_STAGE: SUPER_ANDHIKA_BROS_KAIZO.EXE
             </h1>
           </div>
-          <div className="flex items-center gap-1 font-pixel text-[10px]">
-            <span className="w-5 h-5 bg-[#7e22ce] text-white flex items-center justify-center border-2 border-black">
+          <div className="flex items-center gap-1 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 bg-[#7e22ce] text-white flex items-center justify-center border border-black">
               _
             </span>
-            <span className="w-5 h-5 bg-[#7e22ce] text-white flex items-center justify-center border-2 border-black">
+            <span className="w-4 h-4 sm:w-5 sm:h-5 bg-[#7e22ce] text-white flex items-center justify-center border border-black">
               □
             </span>
             <Link
               href="/"
               onClick={() => soundManager.playWindowClose()}
-              className="w-5 h-5 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border-2 border-black"
+              className="w-4 h-4 sm:w-5 sm:h-5 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border border-black cursor-pointer"
             >
               ✕
             </Link>
@@ -884,52 +804,52 @@ export default function MinigamePage() {
         </div>
 
         {/* Content Body */}
-        <div className="p-3 md:p-6 bg-[#0a1622] space-y-4 text-slate-100">
+        <div className="p-2.5 sm:p-5 md:p-6 bg-[#0a1622] space-y-3 sm:space-y-4 text-slate-100">
           {/* Top Mario Style Status HUD */}
-          <div className="bg-[#111f30] p-3 border-4 border-black grid grid-cols-2 sm:grid-cols-6 gap-2 font-pixel text-[9px] text-center">
+          <div className="bg-[#111f30] p-2 sm:p-3 border-2 sm:border-4 border-black grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2 font-pixel text-[7px] sm:text-[8px] md:text-[9px] text-center">
             <div className="text-yellow-400">
-              <span className="block text-slate-400 text-[8px]">PLAYER</span>
-              <span>ANDHIKA</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">PLAYER</span>
+              <span className="truncate block">ANDHIKA</span>
             </div>
             <div className="text-white">
-              <span className="block text-slate-400 text-[8px]">SCORE</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">SCORE</span>
               <span>{score.toString().padStart(6, "0")}</span>
             </div>
             <div className="text-yellow-300">
-              <span className="block text-slate-400 text-[8px]">COINS</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">COINS</span>
               <span>🪙 x {coins.toString().padStart(2, "0")}</span>
             </div>
             <div className="text-cyan-300">
-              <span className="block text-slate-400 text-[8px]">WORLD</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">WORLD</span>
               <span>1-1 HARD</span>
             </div>
             <div className="text-red-400">
-              <span className="block text-slate-400 text-[8px]">LIVES</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">LIVES</span>
               <span>{"❤️".repeat(Math.max(0, lives))}</span>
             </div>
             <div className="text-amber-400">
-              <span className="block text-slate-400 text-[8px]">DEATHS 💀</span>
-              <span>{deaths}</span>
+              <span className="block text-slate-400 text-[6px] sm:text-[8px]">DEATHS</span>
+              <span>💀 {deaths}</span>
             </div>
           </div>
 
           {/* Difficulty & Mode Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-2 font-pixel text-[8px]">
-            <div className="flex items-center gap-2">
-              <span className="text-slate-400">MODE KESULITAN:</span>
+          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400 hidden xs:inline">MODE:</span>
               <button
                 onClick={() => {
                   soundManager.playClick();
                   setDifficulty("standard");
                   startNewGame("standard");
                 }}
-                className={`px-2.5 py-1.5 border-2 border-black ${
+                className={`px-2 py-1 border border-black sm:border-2 cursor-pointer ${
                   difficulty === "standard"
                     ? "bg-[#0284c7] text-white font-bold shadow-[2px_2px_0px_#000]"
                     : "bg-[#1e293b] text-slate-400 hover:bg-[#334155]"
                 }`}
               >
-                STANDARD HARD (3 ❤️)
+                STANDARD (3 ❤️)
               </button>
               <button
                 onClick={() => {
@@ -937,24 +857,24 @@ export default function MinigamePage() {
                   setDifficulty("kaizo");
                   startNewGame("kaizo");
                 }}
-                className={`px-2.5 py-1.5 border-2 border-black flex items-center gap-1 ${
+                className={`px-2 py-1 border border-black sm:border-2 flex items-center gap-1 cursor-pointer ${
                   difficulty === "kaizo"
                     ? "bg-[#b91c1c] text-white font-bold shadow-[2px_2px_0px_#000]"
                     : "bg-[#1e293b] text-slate-400 hover:bg-[#334155]"
                 }`}
               >
-                <Flame className="w-3 h-3 text-yellow-400" />
-                <span>KAIZO NIGHTMARE (1-HIT)</span>
+                <Flame className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+                <span>KAIZO (1-HIT)</span>
               </button>
             </div>
 
-            <span className="text-cyan-300 font-vt323 text-base">
+            <span className="text-cyan-300 font-vt323 text-sm sm:text-base hidden md:inline">
               KONTROL: [A][D] Gerak | [W/Spasi] Lompat | [Shift] Sprint
             </span>
           </div>
 
           {/* 2D Canvas Viewport */}
-          <div className="relative border-4 border-black shadow-[6px_6px_0px_#000] overflow-hidden bg-black aspect-[16/9] max-h-[450px] w-full">
+          <div className="relative border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[6px_6px_0px_#000] overflow-hidden bg-black aspect-[16/9] max-h-[420px] w-full">
             <canvas
               ref={canvasRef}
               width={800}
@@ -965,21 +885,21 @@ export default function MinigamePage() {
 
             {/* Start Screen Overlay */}
             {gameState === "idle" && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center space-y-4">
-                <h2 className="font-pixel text-xl md:text-3xl text-yellow-400 drop-shadow-[3px_3px_0px_#000]">
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-4">
+                <h2 className="font-pixel text-base sm:text-2xl md:text-3xl text-yellow-400 drop-shadow-[2px_2px_0px_#000]">
                   SUPER ANDHIKA BROS
                 </h2>
-                <p className="font-pixel text-[9px] md:text-xs text-red-400">
+                <p className="font-pixel text-[8px] sm:text-xs text-red-400">
                   {difficulty === "kaizo" ? "🔥 KAIZO NIGHTMARE EDITION 🔥" : "⚡ HARDCORE PLATFORMER ⚡"}
                 </p>
-                <p className="font-vt323 text-lg md:text-xl text-slate-200 max-w-lg leading-snug">
-                  Taklukkan jurang maut, tanaman pemangsa di dalam pipa, duri jebakan, dan kelelawar udara untuk mencapai tiang bendera di ujung kastil!
+                <p className="font-vt323 text-base sm:text-xl text-slate-200 max-w-lg leading-snug">
+                  Taklukkan jurang maut, tanaman pemangsa di pipa, duri jebakan, dan kelelawar untuk mencapai tiang bendera!
                 </p>
                 <button
                   onClick={() => startNewGame()}
-                  className="px-8 py-3.5 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-xs md:text-sm border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 font-bold flex items-center gap-2 cursor-pointer"
+                  className="px-5 sm:px-8 py-2.5 sm:py-3 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[9px] sm:text-xs md:text-sm border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Play className="w-5 h-5" />
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                   <span>START ADVENTURE (1-1)</span>
                 </button>
               </div>
@@ -987,21 +907,21 @@ export default function MinigamePage() {
 
             {/* Game Over Screen Overlay */}
             {gameState === "gameover" && (
-              <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center space-y-3">
-                <h2 className="font-pixel text-2xl md:text-4xl text-red-500">
+              <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-3">
+                <h2 className="font-pixel text-xl sm:text-3xl text-red-500">
                   GAME OVER!
                 </h2>
-                <p className="font-pixel text-xs text-yellow-400">
+                <p className="font-pixel text-[8px] sm:text-xs text-yellow-400">
                   TOTAL DEATHS: {deaths} 💀 | FINAL SCORE: {score}
                 </p>
-                <p className="font-vt323 text-lg text-slate-300">
-                  Jangan menyerah! Setiap kegagalan adalah insight untuk lompatan berikutnya.
+                <p className="font-vt323 text-base sm:text-lg text-slate-300">
+                  Setiap kegagalan adalah insight untuk lompatan berikutnya.
                 </p>
                 <button
                   onClick={() => startNewGame()}
-                  className="px-6 py-3 bg-[#eab308] hover:bg-[#ca8a04] text-black font-pixel text-xs border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 font-bold flex items-center gap-2 cursor-pointer"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#eab308] hover:bg-[#ca8a04] text-black font-pixel text-[8px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold flex items-center gap-1.5 cursor-pointer"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3.5 h-3.5 flex-shrink-0" />
                   <span>RETRY STAGE 1-1</span>
                 </button>
               </div>
@@ -1009,21 +929,21 @@ export default function MinigamePage() {
 
             {/* Victory Screen Overlay */}
             {gameState === "victory" && (
-              <div className="absolute inset-0 bg-[#064e3b]/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center space-y-4 animate-in fade-in">
-                <h2 className="font-pixel text-2xl md:text-4xl text-yellow-300">
+              <div className="absolute inset-0 bg-[#064e3b]/90 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-4 animate-in fade-in">
+                <h2 className="font-pixel text-xl sm:text-3xl text-yellow-300">
                   STAGE CLEAR! 🏆
                 </h2>
-                <p className="font-pixel text-xs text-green-300">
+                <p className="font-pixel text-[8px] sm:text-xs text-green-300">
                   SELAMAT! ANDA BERHASIL MENAKLUKKAN STAGE SULIT KAIZO!
                 </p>
-                <div className="bg-[#0f172a] p-3 border-2 border-black font-pixel text-xs space-y-1 text-white">
+                <div className="bg-[#0f172a] p-2 sm:p-3 border-2 border-black font-pixel text-[8px] sm:text-xs space-y-1 text-white">
                   <div>SKOR AKHIR: {score + 5000}</div>
                   <div className="text-yellow-400">KOIN TERKUMPUL: {coins}</div>
                   <div className="text-red-400">TOTAL DEATHS: {deaths}</div>
                 </div>
                 <button
                   onClick={() => startNewGame()}
-                  className="px-6 py-3 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-xs border-4 border-black shadow-[4px_4px_0px_#000] active:translate-y-1 font-bold"
+                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[8px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold cursor-pointer"
                 >
                   MAIN ULANG / TINGKATKAN SKOR
                 </button>
@@ -1031,16 +951,16 @@ export default function MinigamePage() {
             )}
           </div>
 
-          {/* Virtual Gamepad for Mobile & Touch Devices */}
-          <div className="bg-[#111f30] p-3 border-4 border-black flex items-center justify-between gap-4">
+          {/* Virtual Gamepad for Mobile */}
+          <div className="bg-[#111f30] p-2 sm:p-3 border-2 sm:border-4 border-black flex items-center justify-between gap-2 sm:gap-4">
             {/* Left D-Pad */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onTouchStart={() => (keys.current.left = true)}
                 onTouchEnd={() => (keys.current.left = false)}
                 onMouseDown={() => (keys.current.left = true)}
                 onMouseUp={() => (keys.current.left = false)}
-                className="w-14 h-12 md:w-16 md:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
+                className="w-12 h-10 sm:w-16 sm:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-base sm:text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
               >
                 ◀
               </button>
@@ -1049,7 +969,7 @@ export default function MinigamePage() {
                 onTouchEnd={() => (keys.current.right = false)}
                 onMouseDown={() => (keys.current.right = true)}
                 onMouseUp={() => (keys.current.right = false)}
-                className="w-14 h-12 md:w-16 md:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
+                className="w-12 h-10 sm:w-16 sm:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-base sm:text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
               >
                 ▶
               </button>
@@ -1057,19 +977,19 @@ export default function MinigamePage() {
 
             {/* Quick Tips */}
             <div className="hidden md:block text-center font-vt323 text-sm text-slate-400">
-              💡 Tip: Tahan tombol lompat untuk loncat lebih tinggi. Tahan tombol Run untuk lari kencang melewati jurang lebar!
+              💡 Tip: Tahan tombol lompat untuk loncat lebih tinggi. Tahan tombol Run untuk lari kencang!
             </div>
 
             {/* Action Buttons (A: Jump, B: Run) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onTouchStart={() => (keys.current.run = true)}
                 onTouchEnd={() => (keys.current.run = false)}
                 onMouseDown={() => (keys.current.run = true)}
                 onMouseUp={() => (keys.current.run = false)}
-                className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-[#d97706] active:bg-[#f59e0b] text-black font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
+                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#d97706] active:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
               >
-                B (RUN)
+                RUN
               </button>
               <button
                 onTouchStart={() => {
@@ -1082,19 +1002,19 @@ export default function MinigamePage() {
                   soundManager.playJump();
                 }}
                 onMouseUp={() => (keys.current.jump = false)}
-                className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#16a34a] active:bg-[#22c55e] text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#16a34a] active:bg-[#22c55e] text-white font-pixel text-[9px] sm:text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
               >
-                A (JUMP)
+                JUMP
               </button>
             </div>
           </div>
 
           {/* Bottom Actions */}
-          <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t-2 border-slate-700">
+          <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 border-t-2 border-slate-700">
             <Link
               href="/certificates"
               onClick={() => soundManager.playClick()}
-              className="px-4 py-2.5 bg-[#475569] hover:bg-[#64748b] text-white font-pixel text-[9px] border-2 border-black shadow-[2px_2px_0px_#000]"
+              className="px-3 sm:px-4 py-2 bg-[#475569] hover:bg-[#64748b] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] text-center"
             >
               ◀ KEMBALI KE SERTIFIKAT
             </Link>
@@ -1102,10 +1022,10 @@ export default function MinigamePage() {
             <Link
               href="/contact"
               onClick={() => soundManager.playClick()}
-              className="px-4 py-2.5 bg-[#0d9488] hover:bg-[#0f766e] text-white font-pixel text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center gap-1.5"
+              className="px-3 sm:px-4 py-2 bg-[#0d9488] hover:bg-[#0f766e] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
             >
-              <span>LANJUT KE KOTAK SURAT KONTAK</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>LANJUT KE KONTAK</span>
+              <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </Link>
           </div>
         </div>
