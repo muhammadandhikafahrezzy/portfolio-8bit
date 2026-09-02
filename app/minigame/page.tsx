@@ -15,39 +15,39 @@ import {
   VolumeX,
 } from "lucide-react";
 
-// DATA LABYRINTH MAZE (19 cols x 21 rows)
+// NEW HARD DATA DUNGEON LABYRINTH (21 cols x 21 rows)
 // 0: Empty path
-// 1: Neon Maze Wall
+// 1: Emerald Stone Dungeon Wall
 // 2: Golden Data Bit (+10)
 // 3: Power Insight Crystal (+50)
-// 4: Snake Gate
-// 5: Snake Nest Inside
-// 6: Warp Tunnel
-const MAZE_TEMPLATE = [
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
-  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-  [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-  [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
-  [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-  [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
-  [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
-  [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-  [6, 0, 0, 0, 2, 0, 0, 1, 5, 5, 5, 1, 0, 0, 2, 0, 0, 0, 6],
-  [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-  [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
-  [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
-  [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
-  [1, 3, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 3, 1],
-  [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
-  [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-  [1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+// 4: Snake Nest Gate
+// 5: Snake Nest Spawn Inside
+// 6: Warp Teleport Tunnel
+const HARD_DUNGEON_MAZE = [
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 3, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 3, 1],
+  [1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+  [1, 2, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2, 1],
+  [1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 0, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1],
+  [1, 2, 2, 2, 1, 3, 1, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 2, 2, 2, 1],
+  [1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1],
+  [1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 1, 2, 1, 2, 1, 0, 5, 0, 1, 2, 1, 2, 1, 1, 1, 2, 1],
+  [6, 2, 2, 2, 1, 2, 1, 2, 1, 5, 5, 5, 1, 2, 1, 2, 1, 2, 2, 2, 6],
+  [1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 4, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1],
+  [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1],
+  [1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1],
+  [1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1],
+  [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
+  [1, 2, 1, 3, 1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 3, 1, 2, 1],
+  [1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1],
+  [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
-const COLS = 19;
+const COLS = 21;
 const ROWS = 21;
 
 type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
@@ -69,20 +69,20 @@ interface SnakeEnemy {
   wiggle: number;
 }
 
-export default function AndhikaSnakeLabyrinthPage() {
+export default function AndhikaHardDungeonLabyrinthPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "gameover" | "victory">("idle");
   const [score, setScore] = useState<number>(0);
-  const [highScore, setHighScore] = useState<number>(12500);
+  const [highScore, setHighScore] = useState<number>(15000);
   const [lives, setLives] = useState<number>(3);
   const [powerTimer, setPowerTimer] = useState<number>(0);
   const [bitsLeft, setBitsLeft] = useState<number>(0);
   const [audioMuted, setAudioMuted] = useState<boolean>(false);
 
-  // Load High Score
+  // High score from local storage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("andhika_snake_high_score");
+      const saved = localStorage.getItem("andhika_hard_dungeon_highscore");
       if (saved) setHighScore(parseInt(saved, 10));
     }
   }, []);
@@ -118,108 +118,108 @@ export default function AndhikaSnakeLabyrinthPage() {
       osc.start();
       osc.stop(ctx.currentTime + duration);
     } catch {
-      // Fallback
+      // Audio fallback
     }
   };
 
   const playCollectBitSound = () => {
     chompToggle.current = !chompToggle.current;
-    playTone(chompToggle.current ? 440 : 580, "triangle", 0.07, 0.06);
+    playTone(chompToggle.current ? 480 : 620, "triangle", 0.06, 0.06);
   };
 
   const playPowerCrystalSound = () => {
-    playTone(659, "square", 0.15, 0.09);
-    setTimeout(() => playTone(880, "square", 0.2, 0.09), 90);
-    setTimeout(() => playTone(1174, "square", 0.25, 0.1), 180);
+    playTone(700, "square", 0.12, 0.09);
+    setTimeout(() => playTone(950, "square", 0.16, 0.09), 80);
+    setTimeout(() => playTone(1300, "square", 0.22, 0.1), 160);
   };
 
   const playDefeatSnakeSound = () => {
-    playTone(900, "sine", 0.2, 0.12);
-    setTimeout(() => playTone(1200, "sine", 0.25, 0.12), 80);
+    playTone(950, "sine", 0.18, 0.12);
+    setTimeout(() => playTone(1350, "sine", 0.22, 0.12), 70);
   };
 
   const playHurtSound = () => {
-    [480, 380, 280, 180, 90].forEach((f, i) => {
-      setTimeout(() => playTone(f, "sawtooth", 0.1, 0.12), i * 70);
+    [520, 420, 320, 220, 110].forEach((f, i) => {
+      setTimeout(() => playTone(f, "sawtooth", 0.09, 0.12), i * 65);
     });
   };
 
-  // Game Engine Ref
+  // Game Engine State
   const engineRef = useRef({
-    grid: MAZE_TEMPLATE.map((row) => [...row]),
+    grid: HARD_DUNGEON_MAZE.map((row) => [...row]),
     player: {
-      x: 9,
-      y: 16,
+      x: 10,
+      y: 19,
       dir: "NONE" as Direction,
       nextDir: "NONE" as Direction,
       facing: "RIGHT" as "LEFT" | "RIGHT" | "UP" | "DOWN",
       animStep: 0,
-      speed: 0.095,
+      speed: 0.098,
     },
     snakes: [
       {
         id: "red_viper",
         name: "VIPER",
-        species: "NULL_POINTER",
+        species: "DIRECT_CHASER",
         color: "#dc2626",
         headColor: "#ef4444",
-        x: 9,
-        y: 8,
+        x: 10,
+        y: 7,
         dir: "LEFT" as Direction,
-        speed: 0.076,
+        speed: 0.078,
         mode: "chase" as const,
         nest: false,
-        spawnX: 9,
-        spawnY: 8,
+        spawnX: 10,
+        spawnY: 7,
         wiggle: 0,
       },
       {
         id: "pink_cobra",
         name: "COBRA",
-        species: "MEMORY_LEAK",
+        species: "AMBUSH_INTERCEPTOR",
         color: "#db2777",
         headColor: "#f472b6",
-        x: 8,
-        y: 10,
+        x: 9,
+        y: 9,
         dir: "UP" as Direction,
-        speed: 0.07,
+        speed: 0.074,
         mode: "chase" as const,
         nest: true,
-        spawnX: 8,
-        spawnY: 10,
-        wiggle: 0.5,
+        spawnX: 9,
+        spawnY: 9,
+        wiggle: 0.6,
       },
       {
         id: "cyan_python",
         name: "PYTHON",
-        species: "SYNTAX_BUG",
+        species: "PINCER_FLANKER",
         color: "#0284c7",
         headColor: "#38bdf8",
-        x: 9,
-        y: 10,
+        x: 10,
+        y: 9,
         dir: "UP" as Direction,
-        speed: 0.068,
+        speed: 0.072,
         mode: "chase" as const,
         nest: true,
-        spawnX: 9,
-        spawnY: 10,
-        wiggle: 1.0,
+        spawnX: 10,
+        spawnY: 9,
+        wiggle: 1.2,
       },
       {
         id: "orange_mamba",
         name: "MAMBA",
-        species: "DIRTY_DATA",
+        species: "TERRITORY_PATROL",
         color: "#ea580c",
         headColor: "#fb923c",
-        x: 10,
-        y: 10,
+        x: 11,
+        y: 9,
         dir: "UP" as Direction,
-        speed: 0.065,
+        speed: 0.07,
         mode: "chase" as const,
         nest: true,
-        spawnX: 10,
-        spawnY: 10,
-        wiggle: 1.5,
+        spawnX: 11,
+        spawnY: 9,
+        wiggle: 1.8,
       },
     ] as SnakeEnemy[],
     powerTime: 0,
@@ -250,18 +250,18 @@ export default function AndhikaSnakeLabyrinthPage() {
   const startGame = useCallback(() => {
     initAudio();
     soundManager.playLevelUp();
-    const newGrid = MAZE_TEMPLATE.map((row) => [...row]);
+    const newGrid = HARD_DUNGEON_MAZE.map((row) => [...row]);
     const total = countBits(newGrid);
 
     engineRef.current.grid = newGrid;
     engineRef.current.player = {
-      x: 9,
-      y: 16,
+      x: 10,
+      y: 19,
       dir: "NONE",
       nextDir: "NONE",
       facing: "RIGHT",
       animStep: 0,
-      speed: 0.095,
+      speed: 0.098,
     };
     engineRef.current.snakes.forEach((s) => {
       s.x = s.spawnX;
@@ -337,7 +337,7 @@ export default function AndhikaSnakeLabyrinthPage() {
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
 
-    if (Math.max(absX, absY) > 20) {
+    if (Math.max(absX, absY) > 18) {
       if (absX > absY) {
         setNextDirection(dx > 0 ? "RIGHT" : "LEFT");
       } else {
@@ -347,7 +347,7 @@ export default function AndhikaSnakeLabyrinthPage() {
     touchStartPos.current = null;
   };
 
-  // Main Game Loop with Smooth Cornering Assist
+  // Main Game Loop with Smooth Cornering Assist & Non-Overlapping Snake AI
   useEffect(() => {
     if (gameState !== "playing") return;
 
@@ -365,13 +365,13 @@ export default function AndhikaSnakeLabyrinthPage() {
       const grid = engine.grid;
       engine.frameCount++;
 
-      // --- 1. SMOOTH PLAYER CORNERING & MOVEMENT ---
+      // --- 1. PLAYER MOVEMENT & AUTO-ALIGN CORNERING ---
       const roundX = Math.round(player.x);
       const roundY = Math.round(player.y);
       const diffX = player.x - roundX;
       const diffY = player.y - roundY;
 
-      // Handle Direction Change with Auto-Alignment Corner Assist
+      // Check Direction Turn Request
       if (player.nextDir !== "NONE" && player.nextDir !== player.dir) {
         const isReverse =
           (player.dir === "LEFT" && player.nextDir === "RIGHT") ||
@@ -384,19 +384,17 @@ export default function AndhikaSnakeLabyrinthPage() {
           player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
           player.nextDir = "NONE";
         } else if (player.nextDir === "UP" || player.nextDir === "DOWN") {
-          // Turning vertical while moving horizontal
           const targetR = player.nextDir === "UP" ? roundY - 1 : roundY + 1;
           if (Math.abs(diffX) < 0.45 && isTileWalkable(roundX, targetR)) {
-            player.x = roundX; // Snap smoothly to column center
+            player.x = roundX; // Snap to center
             player.dir = player.nextDir;
             player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
             player.nextDir = "NONE";
           }
         } else if (player.nextDir === "LEFT" || player.nextDir === "RIGHT") {
-          // Turning horizontal while moving vertical
           const targetC = player.nextDir === "LEFT" ? roundX - 1 : roundX + 1;
           if (Math.abs(diffY) < 0.45 && isTileWalkable(targetC, roundY)) {
-            player.y = roundY; // Snap smoothly to row center
+            player.y = roundY; // Snap to center
             player.dir = player.nextDir;
             player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
             player.nextDir = "NONE";
@@ -404,7 +402,7 @@ export default function AndhikaSnakeLabyrinthPage() {
         }
       }
 
-      // Step Forward in Current Direction
+      // Step Forward
       const pSpeed = player.speed;
       if (player.dir === "UP") {
         const nextY = player.y - pSpeed;
@@ -412,7 +410,6 @@ export default function AndhikaSnakeLabyrinthPage() {
           player.y = nextY;
           player.animStep = (player.animStep + 0.25) % 4;
         } else {
-          // Stop at tile center
           player.y = Math.max(roundY, nextY);
         }
       } else if (player.dir === "DOWN") {
@@ -445,7 +442,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       if (player.x < -0.5) player.x = COLS - 0.5;
       if (player.x > COLS - 0.5) player.x = -0.5;
 
-      // Collect Data Bits & Insight Crystals
+      // Collect Data Bits & Crystals
       const pCol = Math.round(player.x);
       const pRow = Math.round(player.y);
 
@@ -458,7 +455,7 @@ export default function AndhikaSnakeLabyrinthPage() {
             if (next > highScore) {
               setHighScore(next);
               if (typeof window !== "undefined")
-                localStorage.setItem("andhika_snake_high_score", next.toString());
+                localStorage.setItem("andhika_hard_dungeon_highscore", next.toString());
             }
             return next;
           });
@@ -467,7 +464,7 @@ export default function AndhikaSnakeLabyrinthPage() {
             const next = prev - 1;
             if (next <= 0) {
               setGameState("victory");
-              confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+              confetti({ particleCount: 160, spread: 85, origin: { y: 0.6 } });
               soundManager.playVictory();
             }
             return next;
@@ -496,7 +493,7 @@ export default function AndhikaSnakeLabyrinthPage() {
         }
       }
 
-      // --- 2. UPDATE SNAKES (ULER MONSTERS) ---
+      // --- 2. SMART SNAKE HUNTING & INTER-SNAKE COLLISION AVOIDANCE ---
       const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
       const oppositeDir: Record<Direction, Direction> = {
         UP: "DOWN",
@@ -507,18 +504,20 @@ export default function AndhikaSnakeLabyrinthPage() {
       };
 
       snakes.forEach((s) => {
-        s.wiggle += 0.2;
+        s.wiggle += 0.22;
 
+        // Nest exit
         if (s.nest) {
-          s.y -= 0.03;
-          if (s.y <= 8.0) {
+          s.y -= 0.032;
+          if (s.y <= 7.0) {
             s.nest = false;
-            s.y = 8;
+            s.y = 7;
             s.dir = "LEFT";
           }
           return;
         }
 
+        // Return to nest if eaten
         if (s.mode === "eaten") {
           const dx = s.spawnX - s.x;
           const dy = s.spawnY - s.y;
@@ -528,8 +527,8 @@ export default function AndhikaSnakeLabyrinthPage() {
             s.x = s.spawnX;
             s.y = s.spawnY;
           } else {
-            s.x += (dx / dist) * 0.12;
-            s.y += (dy / dist) * 0.12;
+            s.x += (dx / dist) * 0.13;
+            s.y += (dy / dist) * 0.13;
           }
           return;
         }
@@ -539,12 +538,13 @@ export default function AndhikaSnakeLabyrinthPage() {
         const sDiffX = Math.abs(s.x - sRoundX);
         const sDiffY = Math.abs(s.y - sRoundY);
 
-        // Turn at tile centers / intersections
+        // Make path decision at tile intersections
         if (sDiffX < 0.08 && sDiffY < 0.08) {
           s.x = sRoundX;
           s.y = sRoundY;
 
-          const validDirs = possibleDirs.filter((d) => {
+          // 1. Find all walkable directions not directly opposite
+          const walkableDirs = possibleDirs.filter((d) => {
             if (d === oppositeDir[s.dir]) return false;
             let checkC = sRoundX;
             let checkR = sRoundY;
@@ -555,30 +555,60 @@ export default function AndhikaSnakeLabyrinthPage() {
             return isTileWalkable(checkC, checkR, false);
           });
 
-          if (validDirs.length > 0) {
+          // 2. Inter-Snake Separation: Filter out directions occupied by other active snakes
+          const nonBlockedDirs = walkableDirs.filter((d) => {
+            let checkC = sRoundX;
+            let checkR = sRoundY;
+            if (d === "UP") checkR--;
+            if (d === "DOWN") checkR++;
+            if (d === "LEFT") checkC--;
+            if (d === "RIGHT") checkC++;
+
+            // Prevent snakes from colliding or stacking on top of each other!
+            const hasAnotherSnake = snakes.some((other) => {
+              if (other.id === s.id || other.mode === "eaten" || other.nest) return false;
+              const distToOther = Math.hypot(other.x - checkC, other.y - checkR);
+              return distToOther < 0.92;
+            });
+
+            return !hasAnotherSnake;
+          });
+
+          // Choose from non-blocked if available, or fallback to walkable to prevent deadlocks
+          const candidateDirs = nonBlockedDirs.length > 0 ? nonBlockedDirs : walkableDirs;
+
+          if (candidateDirs.length > 0) {
             if (s.mode === "frightened") {
-              s.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+              // Run away in random direction
+              s.dir = candidateDirs[Math.floor(Math.random() * candidateDirs.length)];
             } else {
+              // Targeted Smart Chasing with Distinct Snake Roles
               let targetX = player.x;
               let targetY = player.y;
 
               if (s.id === "pink_cobra") {
+                // Cobra ambushes 3 tiles ahead
                 if (player.dir === "UP") targetY -= 3;
                 if (player.dir === "DOWN") targetY += 3;
                 if (player.dir === "LEFT") targetX -= 3;
                 if (player.dir === "RIGHT") targetX += 3;
+              } else if (s.id === "cyan_python") {
+                // Python flanks from opposite quadrant
+                targetX = player.x + (player.x - snakes[0].x);
+                targetY = player.y + (player.y - snakes[0].y);
               } else if (s.id === "orange_mamba") {
-                const dist = Math.hypot(s.x - player.x, s.y - player.y);
-                if (dist < 4) {
+                // Mamba patrols quadrant corners if far, rushes in when close
+                const distToP = Math.hypot(s.x - player.x, s.y - player.y);
+                if (distToP > 6) {
                   targetX = 1;
                   targetY = 19;
                 }
               }
 
-              let bestDir = validDirs[0];
+              let bestDir = candidateDirs[0];
               let minDist = Infinity;
 
-              validDirs.forEach((d) => {
+              candidateDirs.forEach((d) => {
                 let testC = sRoundX;
                 let testR = sRoundY;
                 if (d === "UP") testR--;
@@ -596,7 +626,6 @@ export default function AndhikaSnakeLabyrinthPage() {
               s.dir = bestDir;
             }
           } else {
-            // Turn around if dead end
             s.dir = oppositeDir[s.dir];
           }
         }
@@ -629,8 +658,8 @@ export default function AndhikaSnakeLabyrinthPage() {
                 setGameState("gameover");
                 soundManager.playDeath();
               } else {
-                player.x = 9;
-                player.y = 16;
+                player.x = 10;
+                player.y = 19;
                 player.dir = "NONE";
                 player.nextDir = "NONE";
                 snakes.forEach((snk) => {
@@ -647,14 +676,14 @@ export default function AndhikaSnakeLabyrinthPage() {
         }
       });
 
-      // --- 3. RENDER CANVAS (8-BIT PIXEL ART) ---
-      ctx.fillStyle = "#0a1120";
+      // --- 3. RENDER CANVAS (ANCIENT DATA DUNGEON PIXEL ART) ---
+      ctx.fillStyle = "#050b14";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cellW = canvas.width / COLS;
       const cellH = canvas.height / ROWS;
 
-      // Draw Maze Walls & Data Bits
+      // Draw Dungeon Walls & Collectibles
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const cell = grid[r][c];
@@ -662,26 +691,30 @@ export default function AndhikaSnakeLabyrinthPage() {
           const py = r * cellH;
 
           if (cell === 1) {
-            // Neon Tech Labyrinth Wall
-            ctx.fillStyle = "#1e3a8a";
+            // Ancient Emerald Stone Dungeon Bricks
+            ctx.fillStyle = "#064e3b";
             ctx.fillRect(px, py, cellW, cellH);
-            ctx.strokeStyle = "#38bdf8";
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(px + 2, py + 2, cellW - 4, cellH - 4);
+            ctx.strokeStyle = "#10b981";
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(px + 1.5, py + 1.5, cellW - 3, cellH - 3);
+
+            // Brick inner shadow
+            ctx.fillStyle = "#047857";
+            ctx.fillRect(px + 3, py + 3, cellW - 6, 2);
           } else if (cell === 4) {
-            // Snake Nest Gate
+            // Snake Nest Iron Gate
             ctx.fillStyle = "#fb923c";
             ctx.fillRect(px, py + cellH / 2 - 2, cellW, 4);
           } else if (cell === 2) {
-            // Golden Data Bit (Square pixel coin)
+            // Golden Data Bit
             ctx.fillStyle = "#facc15";
             ctx.fillRect(px + cellW * 0.35, py + cellH * 0.35, cellW * 0.3, cellH * 0.3);
             ctx.fillStyle = "#fef08a";
             ctx.fillRect(px + cellW * 0.35, py + cellH * 0.35, cellW * 0.1, cellH * 0.1);
           } else if (cell === 3) {
             // Power Insight Crystal (Pulsing Diamond Gem)
-            const pulse = (Math.sin(Date.now() / 120) + 1) / 2;
-            const size = cellW * (0.35 + pulse * 0.1);
+            const pulse = (Math.sin(Date.now() / 110) + 1) / 2;
+            const size = cellW * (0.35 + pulse * 0.12);
             const cx = px + cellW / 2;
             const cy = py + cellH / 2;
 
@@ -694,35 +727,35 @@ export default function AndhikaSnakeLabyrinthPage() {
             ctx.closePath();
             ctx.fill();
 
-            // Gem shine
+            // Gem shine sparkle
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(cx - 1, cy - size * 0.5, 2, 2);
           }
         }
       }
 
-      // --- 4. DRAW PLAYER: ANDHIKA KNIGHT (GREEN TUNIC) ---
+      // --- 4. DRAW PLAYER (ANDHIKA KNIGHT IN GREEN) ---
       const pX = (player.x + 0.5) * cellW;
       const pY = (player.y + 0.5) * cellH;
-      const pHeroSize = cellW * 0.95;
+      const pHeroSize = cellW * 0.96;
 
       ctx.save();
       ctx.translate(pX, pY);
 
       // Power Crystal Golden Aura
       if (engine.powerTime > 0) {
-        ctx.fillStyle = engine.frameCount % 4 < 2 ? "rgba(250, 204, 21, 0.45)" : "rgba(56, 189, 248, 0.45)";
+        ctx.fillStyle =
+          engine.frameCount % 4 < 2 ? "rgba(250, 204, 21, 0.45)" : "rgba(56, 189, 248, 0.45)";
         ctx.beginPath();
         ctx.arc(0, 0, pHeroSize * 0.75, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Flip sprite if facing left
       if (player.facing === "LEFT") {
         ctx.scale(-1, 1);
       }
 
-      const s = pHeroSize / 24; // Scale relative to 24x24 pixel grid
+      const s = pHeroSize / 24;
 
       // 1. Hair / Brown Cap
       ctx.fillStyle = "#854d0e";
@@ -741,7 +774,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       ctx.fillStyle = "#16a34a";
       ctx.fillRect(-5 * s, -2 * s, 10 * s, 6 * s);
 
-      // 4. Brown Belt with Gold Buckle
+      // 4. Belt with Gold Buckle
       ctx.fillStyle = "#854d0e";
       ctx.fillRect(-5 * s, 1 * s, 10 * s, 2 * s);
       ctx.fillStyle = "#facc15";
@@ -759,7 +792,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       ctx.fillStyle = "#94a3b8";
       ctx.fillRect(4 * s, 2 * s, 4 * s, 2 * s);
 
-      // 7. Boots (Animated step)
+      // 7. Boots (Animated Step)
       const legOffset = Math.sin(player.animStep * Math.PI) * 2 * s;
       ctx.fillStyle = "#78350f";
       ctx.fillRect(-4 * s, 5 * s + legOffset, 3 * s, 4 * s);
@@ -767,7 +800,7 @@ export default function AndhikaSnakeLabyrinthPage() {
 
       ctx.restore();
 
-      // --- 5. DRAW SNAKES (ULER 8-BIT) ---
+      // --- 5. DRAW SNAKES (SLITHERING & NON-OVERLAPPING) ---
       snakes.forEach((snk) => {
         const sPx = (snk.x + 0.5) * cellW;
         const sPy = (snk.y + 0.5) * cellH;
@@ -777,7 +810,7 @@ export default function AndhikaSnakeLabyrinthPage() {
         ctx.translate(sPx, sPy);
 
         if (snk.mode === "eaten") {
-          // Defeated Snake Spirit (Slithering Eyes)
+          // Defeated Snake Spirit Eyes
           ctx.fillStyle = "#ffffff";
           ctx.beginPath();
           ctx.arc(-sScale * 0.35, -sScale * 0.2, sScale * 0.3, 0, Math.PI * 2);
@@ -798,34 +831,34 @@ export default function AndhikaSnakeLabyrinthPage() {
             sHeadCol = isFlash ? "#93c5fd" : "#3b82f6";
           }
 
-          // Draw 4 Slithering Snake Segments
+          // 4 Slithering Snake Segments
           const wiggleAmp = Math.sin(snk.wiggle) * (sScale * 0.35);
 
-          // Tail segment
+          // Tail
           ctx.fillStyle = sBodyCol;
           ctx.beginPath();
           ctx.arc(-wiggleAmp * 0.8, sScale * 0.7, sScale * 0.35, 0, Math.PI * 2);
           ctx.fill();
 
-          // Middle body segment
+          // Middle Body
           ctx.fillStyle = sHeadCol;
           ctx.beginPath();
           ctx.arc(wiggleAmp * 0.6, sScale * 0.25, sScale * 0.5, 0, Math.PI * 2);
           ctx.fill();
 
-          // Snake Head (Oval / Rounded rectangle)
+          // Snake Head
           ctx.fillStyle = sBodyCol;
           ctx.beginPath();
           ctx.arc(0, -sScale * 0.2, sScale * 0.75, 0, Math.PI * 2);
           ctx.fill();
 
-          // Snake Scales / Crown Pattern
+          // Snake Crown Scales
           ctx.fillStyle = sHeadCol;
           ctx.fillRect(-sScale * 0.3, -sScale * 0.5, sScale * 0.6, sScale * 0.3);
 
           // Snake Eyes
           if (snk.mode === "frightened") {
-            // Dizzy X eyes
+            // Dizzy X Eyes
             ctx.fillStyle = "#ffffff";
             ctx.beginPath();
             ctx.arc(-sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
@@ -845,7 +878,7 @@ export default function AndhikaSnakeLabyrinthPage() {
             ctx.lineTo(sScale * 0.25, -sScale * 0.15);
             ctx.stroke();
           } else {
-            // Slit Predator Eyes
+            // Predator Eyes
             ctx.fillStyle = "#fef08a";
             ctx.beginPath();
             ctx.arc(-sScale * 0.35, -sScale * 0.25, sScale * 0.25, 0, Math.PI * 2);
@@ -894,18 +927,18 @@ export default function AndhikaSnakeLabyrinthPage() {
       {/* 8-Bit Window Header */}
       <div className="bg-[#0f172a] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[8px_8px_0px_#000]">
         {/* Title Bar */}
-        <div className="bg-[#15803d] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
+        <div className="bg-[#047857] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0 animate-spin" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              BONUS STAGE: ANDHIKA_DATA_LABYRINTH_VS_SNAKES.EXE
+              BONUS STAGE: DATA_DUNGEON_KNIGHT_VS_ULER.EXE
             </h1>
           </div>
           <div className="flex items-center gap-1.5 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
             <button
               onClick={() => setAudioMuted(!audioMuted)}
               title={audioMuted ? "Unmute SFX" : "Mute SFX"}
-              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#166534] hover:bg-[#22c55e] text-white flex items-center justify-center border border-black cursor-pointer"
+              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#065f46] hover:bg-[#10b981] text-white flex items-center justify-center border border-black cursor-pointer"
             >
               {audioMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
             </button>
@@ -957,28 +990,28 @@ export default function AndhikaSnakeLabyrinthPage() {
 
           {/* Arcade Canvas Area */}
           <div
-            className="relative bg-black border-4 border-[#15803d] shadow-[0_0_15px_rgba(34,197,94,0.4)] p-1 sm:p-2 rounded-sm max-w-full overflow-hidden touch-none select-none"
+            className="relative bg-black border-4 border-[#059669] shadow-[0_0_18px_rgba(16,185,129,0.45)] p-1 sm:p-2 rounded-sm max-w-full overflow-hidden touch-none select-none"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             <canvas
               ref={canvasRef}
-              width={380}
+              width={420}
               height={420}
-              className="w-full max-w-[380px] h-auto aspect-[19/21] block mx-auto bg-black"
+              className="w-full max-w-[420px] h-auto aspect-square block mx-auto bg-black"
             />
 
             {/* Start / Idle Screen Overlay */}
             {gameState === "idle" && (
               <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
                 <span className="font-pixel text-yellow-400 text-sm sm:text-base md:text-lg tracking-wider text-shadow-pixel">
-                  DATA KNIGHT VS ULER BUGS 🗡️🐍
+                  DATA DUNGEON LABYRINTH 🗡️🐍
                 </span>
                 <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
-                  Bantu Andhika mengumpulkan seluruh Data Bits di labirin dan hindari kepungan 4 Uler Bug!
+                  Labirin Dungeon Baru yang Lebih Sulit! 4 Uler Bug cerdas akan mengejar dan mengepung Anda dari berbagai jalur tanpa saling bertubrukan!
                 </p>
 
-                {/* Snake Monsters Lineup */}
+                {/* Snake Bug Lineup */}
                 <div className="flex items-center justify-center gap-2.5 py-1 font-pixel text-[7px] text-slate-300">
                   <div className="flex flex-col items-center">
                     <span className="w-3.5 h-3.5 bg-red-500 rounded-full inline-block mb-0.5" />
@@ -1000,7 +1033,7 @@ export default function AndhikaSnakeLabyrinthPage() {
 
                 <button
                   onClick={startGame}
-                  className="px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
+                  className="px-5 py-2.5 bg-[#10b981] hover:bg-[#059669] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
                 >
                   <Play className="w-3.5 h-3.5 fill-black" />
                   <span>START GAME [SPACE]</span>
@@ -1031,20 +1064,20 @@ export default function AndhikaSnakeLabyrinthPage() {
             {gameState === "victory" && (
               <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
                 <span className="font-pixel text-green-400 text-lg sm:text-2xl tracking-wider">
-                  STAGE CLEAR! 🎉
+                  DUNGEON CONQUERED! 🎉
                 </span>
                 <p className="font-vt323 text-lg text-slate-200">
-                  Hebat! Seluruh Data Bits telah dibersihkan dari sarang Uler Bug!
+                  Luar biasa! Anda berhasil menaklukkan Data Dungeon tersulit!
                 </p>
                 <p className="font-pixel text-[8px] sm:text-[9px] text-yellow-300">
                   TOTAL SKOR: {score}
                 </p>
                 <button
                   onClick={startGame}
-                  className="px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
                 >
                   <Trophy className="w-3.5 h-3.5" />
-                  <span>MAIN LEVEL BERIKUTNYA</span>
+                  <span>MAINKAN LAGI</span>
                 </button>
               </div>
             )}
@@ -1060,7 +1093,7 @@ export default function AndhikaSnakeLabyrinthPage() {
               <div />
               <button
                 onClick={() => setNextDirection("UP")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-emerald-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▲
               </button>
@@ -1068,19 +1101,19 @@ export default function AndhikaSnakeLabyrinthPage() {
 
               <button
                 onClick={() => setNextDirection("LEFT")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-emerald-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ◀
               </button>
               <button
                 onClick={() => setNextDirection("DOWN")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-emerald-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▼
               </button>
               <button
                 onClick={() => setNextDirection("RIGHT")}
-                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-green-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-emerald-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▶
               </button>
@@ -1091,11 +1124,12 @@ export default function AndhikaSnakeLabyrinthPage() {
           <div className="w-full bg-[#111f30] p-3 sm:p-4 border-2 border-black text-[7px] sm:text-[8px] font-pixel text-slate-300 space-y-1.5 text-justify sm:text-left">
             <h4 className="text-yellow-400 font-bold mb-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              <span>ATURAN PETUALANGAN DATA KNIGHT VS ULER:</span>
+              <span>ATURAN DATA DUNGEON (HARD MODE):</span>
             </h4>
+            <p>• <strong className="text-emerald-400">Pengejaran Cerdas & Anti-Tabrakan Uler:</strong> Uler tidak akan bertumpukan satu sama lain, melainkan menyebar dan mengepung jalur pelarian Anda secara taktis!</p>
             <p>• <strong className="text-yellow-300">Data Bit (Kuning Emas):</strong> +10 Poin per koin analitik.</p>
             <p>• <strong className="text-cyan-300">Power Insight Crystal (Berlian Biru):</strong> +50 Poin & membekukan Uler menjadi Scared Blue. Sentuh uler untuk bonus combo +200, +400, +800 poin!</p>
-            <p>• <strong className="text-green-400">Tunnel Warp:</strong> Manfaatkan lorong kiri/kanan untuk teleportasi instan menghindari kepungan uler.</p>
+            <p>• <strong className="text-green-400">Tunnel Warp:</strong> Manfaatkan lorong kiri/kanan untuk teleportasi instan menghindari jebakan kepungan uler.</p>
           </div>
 
           {/* Bottom Actions */}
