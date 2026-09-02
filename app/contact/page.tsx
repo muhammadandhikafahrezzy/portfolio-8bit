@@ -17,6 +17,8 @@ import {
   MessageSquare,
   Clock,
   ArrowRight,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 export default function ContactPage() {
@@ -26,7 +28,9 @@ export default function ContactPage() {
     company: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [copied, setCopied] = useState(false);
 
   const handleInputChange = (
@@ -36,17 +40,49 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    soundManager.playLevelUp();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage("");
+
     try {
-      confetti({
-        particleCount: 70,
-        spread: 70,
-        origin: { y: 0.6 },
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "c6689ee6-67da-4b35-9a74-2f5bd1e71e6d",
+          from_name: formData.name,
+          email: formData.email,
+          subject: `[Portofolio Data Analyst] Pesan Baru dari ${formData.name} (${formData.company || "General Inquiry"})`,
+          message: formData.message,
+        }),
       });
-    } catch {}
+
+      const result = await response.json();
+
+      if (result.success) {
+        soundManager.playLevelUp();
+        setSubmitted(true);
+        try {
+          confetti({
+            particleCount: 80,
+            spread: 75,
+            origin: { y: 0.6 },
+          });
+        } catch {}
+      } else {
+        setErrorMessage(result.message || "Gagal mengirim pesan. Silakan coba lagi atau hubungi via WhatsApp.");
+        soundManager.playDeath();
+      }
+    } catch (err) {
+      setErrorMessage("Koneksi gagal. Silakan periksa jaringan internet Anda atau hubungi via WhatsApp/Email langsung.");
+      soundManager.playDeath();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCopyEmail = () => {
@@ -103,15 +139,16 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Dual Column Layout: Direct Channels & Message Terminal */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
             {/* Left Column: Direct Communication Channels */}
-            <div className="space-y-3 sm:space-y-4">
-              <h3 className="font-pixel text-[9px] sm:text-xs text-cyan-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                <span>SALURAN KOMUNIKASI LANGSUNG:</span>
-              </h3>
+            <div className="space-y-3 font-pixel text-[8px] sm:text-[9px]">
+              <div className="flex items-center gap-2 border-b border-slate-700 pb-2">
+                <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+                <h3 className="text-yellow-400 font-bold">SALURAN KOMUNIKASI LANGSUNG</h3>
+              </div>
 
-              <div className="space-y-2 sm:space-y-3 font-pixel text-[8px] sm:text-[9px]">
+              <div className="space-y-2">
                 {/* WhatsApp */}
                 <a
                   href={PORTFOLIO_DATA.contact.whatsappUrl}
@@ -123,7 +160,7 @@ export default function ContactPage() {
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <Phone className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                     <div className="min-w-0">
-                      <span className="block font-bold truncate">WHATSAPP DIRECT</span>
+                      <span className="block font-bold truncate">WHATSAPP RESMI</span>
                       <span className="font-vt323 text-sm sm:text-base text-green-200 block truncate">{PORTFOLIO_DATA.contact.phone}</span>
                     </div>
                   </div>
@@ -204,30 +241,40 @@ export default function ContactPage() {
             {/* Right Column: Retro Terminal Message Form */}
             <div className="bg-[#111f30] p-3 sm:p-5 md:p-6 border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
               <div className="flex items-center gap-2 mb-3 border-b border-slate-700 pb-2">
-                <span className="w-2.5 h-2.5 bg-green-400 flex-shrink-0" />
+                <span className="w-2.5 h-2.5 bg-green-400 flex-shrink-0 animate-pulse" />
                 <h3 className="font-pixel text-[9px] sm:text-xs text-yellow-400">
-                  TERMINAL_PESAN.BAT
+                  TERMINAL_PESAN.BAT — INBOX_DIRECT
                 </h3>
               </div>
 
               {submitted ? (
-                <div className="bg-[#064e3b] p-4 border-2 border-black text-center space-y-2 animate-in fade-in">
-                  <span className="text-3xl">🚀</span>
-                  <h4 className="font-pixel text-xs text-yellow-300">
-                    PESAN BERHASIL DIKIRIM!
+                <div className="bg-[#064e3b] p-4 sm:p-6 border-2 border-black text-center space-y-3 animate-in fade-in">
+                  <span className="text-4xl block animate-bounce">📬</span>
+                  <h4 className="font-pixel text-xs sm:text-sm text-yellow-300">
+                    PESAN BERHASIL MASUK KE INBOX GMAIL!
                   </h4>
-                  <p className="font-vt323 text-base text-slate-200">
-                    Terima kasih telah menghubungi. Saya akan segera merespons pesan Anda dalam waktu 1x24 jam.
+                  <p className="font-vt323 text-base sm:text-lg text-slate-200 leading-snug">
+                    Terima kasih telah menghubungi. Notifikasi pesan Anda telah berhasil dikirimkan langsung ke kotak masuk email Andhika. Saya akan segera membalas email Anda dalam waktu 1x24 jam!
                   </p>
                   <button
-                    onClick={() => setSubmitted(false)}
-                    className="mt-2 px-3 py-1.5 bg-yellow-400 text-black font-pixel text-[8px] border border-black font-bold cursor-pointer"
+                    onClick={() => {
+                      setSubmitted(false);
+                      setFormData({ name: "", email: "", company: "", message: "" });
+                    }}
+                    className="mt-2 px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black font-bold cursor-pointer active:translate-y-0.5"
                   >
                     KIRIM PESAN BARU
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3 font-pixel text-[8px]">
+                  {errorMessage && (
+                    <div className="p-2.5 bg-red-950 border-2 border-red-500 text-red-200 flex items-center gap-2 text-[7px] sm:text-[8px]">
+                      <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <span>{errorMessage}</span>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-slate-300 mb-1">NAMA LENGKAP / HR RECRUITER:</label>
                     <input
@@ -237,12 +284,13 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="e.g. John Doe / HR PT Tech"
-                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400 disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 mb-1">EMAIL PERUSAHAAN / KONTAK:</label>
+                    <label className="block text-slate-300 mb-1">EMAIL PERUSAHAAN / BALASAN:</label>
                     <input
                       type="email"
                       name="email"
@@ -250,19 +298,21 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="e.g. recruiter@company.com"
-                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400 disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 mb-1">SUBJEK / POSISI PEKERJAAN:</label>
+                    <label className="block text-slate-300 mb-1">SUBJEK / PERUSAHAAN:</label>
                     <input
                       type="text"
                       name="company"
                       value={formData.company}
                       onChange={handleInputChange}
-                      placeholder="e.g. Peluang Junior Data Analyst"
-                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400"
+                      placeholder="e.g. Peluang Data Analyst di PT XYZ"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400 disabled:opacity-50"
                     />
                   </div>
 
@@ -274,17 +324,28 @@ export default function ContactPage() {
                       rows={4}
                       value={formData.message}
                       onChange={handleInputChange}
-                      placeholder="Tuliskan pesan Anda di sini..."
-                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400 resize-none"
+                      placeholder="Tuliskan pesan, tawaran proyek, atau peluang karir Anda di sini..."
+                      disabled={isSubmitting}
+                      className="w-full bg-[#0a1622] text-yellow-300 p-2 border border-black font-vt323 text-base sm:text-lg focus:outline-none focus:border-yellow-400 resize-none disabled:opacity-50"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 sm:py-3 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-2.5 sm:py-3 bg-[#0284c7] hover:bg-[#0369a1] disabled:bg-slate-700 text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
-                    <Send className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span>TRANSMIT_MESSAGE.EXE</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>MENGIRIM KE INBOX GMAIL...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>TRANSMIT_MESSAGE.EXE [KIRIM KE INBOX]</span>
+                      </>
+                    )}
                   </button>
                 </form>
               )}

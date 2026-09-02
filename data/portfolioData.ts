@@ -158,7 +158,7 @@ export const PORTFOLIO_DATA = {
         "Actionable Business Insights & Strategy",
       ],
       icon: "chart",
-      githubUrl: "https://github.com/045AndhikaF",
+      githubUrl: "https://github.com/muhammadandhikafahrezzy",
       demoLabel: "LIHAT REPOSITORI GITHUB",
     },
     {
@@ -355,8 +355,8 @@ export const PORTFOLIO_DATA = {
     whatsappUrl: "https://wa.me/6285156868434?text=Halo%20Andhika,%20saya%20tertarik%20dengan%20profil%20Data%20Analyst%20Anda!",
     linkedin: "linkedin.com/in/andhikafahrezzy",
     linkedinUrl: "https://www.linkedin.com/in/andhikafahrezzy/",
-    github: "github.com/045AndhikaF",
-    githubUrl: "https://github.com/045AndhikaF",
+    github: "github.com/muhammadandhikafahrezzy",
+    githubUrl: "https://github.com/muhammadandhikafahrezzy",
     cvFilename: "CV_Muhammad_Andhika_Fahrezzy_ID.docx",
   },
 };
