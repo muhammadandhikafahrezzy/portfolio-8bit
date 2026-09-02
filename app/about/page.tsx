@@ -95,7 +95,7 @@ export default function AboutPage() {
             <div className="flex-1 space-y-3 sm:space-y-4 text-center lg:text-left min-w-0 w-full">
               {/* Retro Speech Bubble */}
               <div className="bg-[#f8fafc] text-black border-2 sm:border-4 border-black p-2.5 sm:p-3.5 shadow-[3px_3px_0px_#000000] relative">
-                <p className="font-pixel text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed text-slate-900 uppercase">
+                <p className="font-pixel text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed text-slate-900 uppercase text-justify sm:text-left">
                   {PORTFOLIO_DATA.about.dialogue}
                 </p>
               </div>
@@ -171,21 +171,21 @@ export default function AboutPage() {
             </button>
           </div>
 
-          {/* Tab 1: Cerita & Perjalanan Karier */}
+          {/* Tab 1: Cerita & Perjalanan Karier (Rata Kiri Kanan / Justify) */}
           {activeTab === "story" && (
             <div className="space-y-4">
-              <div className="bg-[#111f30] p-3 sm:p-5 md:p-6 border-2 sm:border-4 border-black space-y-3 font-vt323 text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed">
+              <div className="bg-[#111f30] p-3 sm:p-5 md:p-6 border-2 sm:border-4 border-black space-y-3 font-vt323 text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed text-justify sm:text-left">
                 <h3 className="font-pixel text-xs sm:text-sm text-yellow-400 mb-2">
-                  🎯 Mengapa Data Analytics?
+                  🎯 Mengapa Data Analytics & Business Intelligence?
                 </h3>
                 <p>
-                  Sebagai mahasiswa Sistem Informasi di Universitas Negeri Surabaya, saya menyadari bahwa data adalah aset paling berharga dalam era digital modern. Namun, data mentah tidak memiliki arti tanpa analisis mendalam, pembersihan yang presisi, dan visualisasi yang dapat dicerna oleh para pengambil keputusan.
+                  Sebagai mahasiswa Sistem Informasi di Universitas Negeri Surabaya, saya menyadari bahwa data adalah aset paling berharga dalam era digital modern. Namun, data mentah tidak memiliki arti tanpa analisis mendalam, pembersihan data yang presisi, dan visualisasi interaktif yang dapat dicerna oleh para pengambil keputusan secara cepat dan akurat.
                 </p>
                 <p>
-                  Pengalaman magang saya di <strong className="text-yellow-300">Kopkar PT Astra Honda Motor</strong> memberikan pemahaman langsung mengenai pentingnya keakuratan stok persediaan, pencatatan transaksi anggota, dan bagaimana pelaporan berkala mampu mengoptimalkan efisiensi operasional organisasi.
+                  Pengalaman kerja nyata saya di <strong className="text-yellow-300">Koperasi Karyawan PT Astra Honda Motor</strong> memberikan pemahaman langsung mengenai pentingnya keakuratan stok persediaan, pencatatan transaksi anggota, dan bagaimana pelaporan berkala berbasis data warehouse mampu mengoptimalkan efisiensi operasional organisasi.
                 </p>
                 <p>
-                  Keunggulan unik saya terletak pada <strong className="text-cyan-300">perpaduan logika data analitik (SQL, Python, Excel) dengan kepekaan desain antarmuka (UI/UX)</strong>. Hal ini memungkinkan saya merancang dashboard yang tidak hanya akurat secara matematis, tetapi juga sangat intuitif, rapi, dan mudah digunakan oleh jajaran eksekutif maupun tim operasional.
+                  Keunggulan unik saya terletak pada <strong className="text-cyan-300">perpaduan logika data analitik (SQL, Python, Excel) dengan kepekaan desain antarmuka (UI/UX)</strong>. Hal ini memungkinkan saya merancang dashboard analitik yang tidak hanya akurat secara matematis, tetapi juga sangat intuitif, rapi, dan mudah digunakan oleh jajaran eksekutif maupun tim operasional.
                 </p>
               </div>
             </div>

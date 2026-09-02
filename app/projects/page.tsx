@@ -78,8 +78,8 @@ export default function ProjectsPage() {
                 KATALOG STUDI KASUS DATA & PROYEK
               </h2>
             </div>
-            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed">
-              Setiap quest merepresentasikan studi kasus nyata dalam memecahkan masalah bisnis menggunakan query SQL, pemodelan data, analisis Python, dan dashboarding interaktif Tableau/Looker Studio.
+            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed">
+              Setiap quest merepresentasikan studi kasus pemecahan masalah bisnis di dunia nyata menggunakan pemodelan data warehouse SQL, analisis analitik Python, dan visualisasi dashboard interaktif Tableau serta Looker Studio.
             </p>
           </div>
 
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
                     {project.subtitle}
                   </p>
 
-                  <p className="font-vt323 text-base sm:text-lg text-slate-300 leading-snug border-t border-slate-700 pt-2 line-clamp-3">
+                  <p className="font-vt323 text-base sm:text-lg text-slate-300 leading-relaxed border-t border-slate-700 pt-2 line-clamp-3 text-justify sm:text-left">
                     {project.description}
                   </p>
 

@@ -90,7 +90,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-1.5 bg-[#1e3a5f] border border-black sm:border-2 px-2 py-0.5 sm:px-2.5 sm:py-1">
                 <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400 flex-shrink-0" />
                 <span className="font-pixel text-[7px] sm:text-[8px] md:text-[9px] text-yellow-300">
-                  OPEN TO WORK: JUNIOR DATA ANALYST / BI
+                  OPEN TO WORK: JUNIOR DATA ANALYST / BI SPECIALIST
                 </span>
               </div>
 
@@ -98,8 +98,8 @@ export default function Home() {
                 {PORTFOLIO_DATA.about.name}
               </h2>
 
-              <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed max-w-3xl">
-                Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (IPK 3.69, Lulus Juli 2026) dengan keahlian teknis kuat dalam pengolahan basis data SQL, scripting analitik Python, perancangan dashboard Tableau & Looker Studio, serta pemahaman bisnis operasional dari pengalaman kerja nyata di Kopkar PT Astra Honda Motor.
+              <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed max-w-3xl">
+                Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (IPK 3.69, Selesai Juli 2026) dengan keahlian teknis kuat dalam pengolahan basis data SQL, scripting analitik Python, perancangan dashboard Tableau & Looker Studio, serta pemahaman bisnis operasional dari pengalaman kerja nyata di Koperasi Karyawan PT Astra Honda Motor.
               </p>
 
               {/* Data Metrics Badges */}
@@ -161,7 +161,7 @@ export default function Home() {
                   {portal.title}
                 </h4>
 
-                <p className="font-vt323 text-sm sm:text-base text-slate-300 mb-3 sm:mb-4 leading-snug">
+                <p className="font-vt323 text-sm sm:text-base text-slate-300 mb-3 sm:mb-4 leading-snug text-justify sm:text-left">
                   {portal.desc}
                 </p>
               </div>

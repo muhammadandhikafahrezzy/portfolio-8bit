@@ -59,8 +59,8 @@ export default function CertificatesPage() {
                 RUANG PIALA (TROPHY ROOM) & SERTIFIKASI RESMI
               </h2>
             </div>
-            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed">
-              Koleksi seluruh sertifikat kelulusan, sertifikasi kompetensi analisis data, magang industri Kopkar PT Astra Honda Motor, dan Surat Penetapan Kelulusan S1 Sistem Informasi UNESA.
+            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed">
+              Koleksi seluruh sertifikasi kompetensi analisis data industri, pelatihan intensif Bitlabs Academy for Business, pengalaman magang industri Koperasi Karyawan PT Astra Honda Motor, serta Surat Penetapan Kelulusan S1 Sistem Informasi UNESA.
             </p>
           </div>
 
@@ -94,7 +94,7 @@ export default function CertificatesPage() {
                     <span>{cert.date}</span>
                   </p>
 
-                  <p className="font-vt323 text-base sm:text-lg text-slate-300 mb-4 sm:mb-6 border-t border-slate-700 pt-2.5 leading-snug">
+                  <p className="font-vt323 text-base sm:text-lg text-slate-300 mb-4 sm:mb-6 border-t border-slate-700 pt-2.5 leading-relaxed text-justify sm:text-left">
                     {cert.description}
                   </p>
                 </div>

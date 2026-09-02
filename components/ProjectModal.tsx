@@ -157,15 +157,15 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             </div>
           )}
 
-          {/* Long Description */}
+          {/* Long Description (Rata Kiri Kanan) */}
           <div className="bg-[#111f30] p-2.5 sm:p-3.5 border-2 border-black space-y-1.5">
             <h4 className="font-pixel text-[8px] sm:text-[9px] text-yellow-400 flex items-center gap-1.5">
               <span>📜</span>
-              <span>DESKRIPSI PROSES & PETUALANGAN:</span>
+              <span>DESKRIPSI PROSES & ANALISIS:</span>
             </h4>
-            <div className="font-vt323 text-base sm:text-lg text-slate-300 space-y-1 leading-snug">
+            <div className="font-vt323 text-base sm:text-lg text-slate-300 space-y-1.5 leading-relaxed text-justify sm:text-left">
               {project.longDescription.map((desc, idx) => (
-                <p key={idx} className="leading-snug">• {desc}</p>
+                <p key={idx} className="leading-relaxed">• {desc}</p>
               ))}
             </div>
           </div>
@@ -178,9 +178,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             </h4>
             <ul className="grid grid-cols-1 gap-1 font-vt323 text-base sm:text-lg text-slate-200">
               {project.highlights.map((hl, idx) => (
-                <li key={idx} className="flex items-center gap-1.5 leading-snug">
-                  <span className="text-yellow-400 font-pixel text-[7px] flex-shrink-0">▶</span>
-                  <span>{hl}</span>
+                <li key={idx} className="flex items-start gap-1.5 leading-snug">
+                  <span className="text-yellow-400 font-pixel text-[7px] flex-shrink-0 mt-1">▶</span>
+                  <span className="text-justify sm:text-left leading-relaxed">{hl}</span>
                 </li>
               ))}
             </ul>

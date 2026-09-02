@@ -54,8 +54,8 @@ export default function ExperiencePage() {
                 PETA PETUALANGAN KARIER KRONOLOGIS (2020 ➔ 2026)
               </h2>
             </div>
-            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 leading-relaxed">
-              Perjalanan profesional dari magang awal 2020 hingga kelulusan studi S1 Sistem Informasi UNESA pada Juli 2026 lengkap dengan bukti sertifikat pengalaman.
+            <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed">
+              Rekam jejak perjalanan profesional yang disusun secara kronologis mulai dari magang industri awal (2020), data warehouse di Koperasi Karyawan Astra Honda Motor (2024), hingga penyelesaian studi S1 Sistem Informasi Universitas Negeri Surabaya (Juli 2026) lengkap dengan lampiran dokumen resmi.
             </p>
           </div>
 
@@ -67,45 +67,48 @@ export default function ExperiencePage() {
                 onMouseEnter={() => soundManager.playHover()}
                 className="bg-[#111f30] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[6px_6px_0px_#000] p-3 sm:p-5 md:p-6 space-y-3 sm:space-y-4 hover:border-yellow-400 transition-colors"
               >
-                {/* Stage Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-slate-700 pb-2.5 sm:pb-3">
-                  <div className="flex items-start sm:items-center gap-2 sm:gap-3">
-                    <span className="font-pixel text-[8px] sm:text-[9px] bg-[#1e3a5f] text-yellow-300 px-2 py-0.5 sm:py-1 border border-black font-bold flex-shrink-0">
+                {/* Stage Header: Cleanly stacked for Mobile & side-by-side on Desktop */}
+                <div className="border-b-2 border-slate-700 pb-3 space-y-2">
+                  {/* Top Bar: Stage Badge + Date/Location */}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-pixel text-[8px] sm:text-[9px] bg-[#1e3a5f] text-yellow-300 px-2.5 py-1 border border-black font-bold inline-block shadow-[2px_2px_0px_#000]">
                       STAGE 0{idx + 1} ({exp.yearRange})
                     </span>
-                    <div className="min-w-0">
-                      <h3 className="font-pixel text-xs sm:text-sm md:text-base text-yellow-400 leading-snug">
-                        {exp.role}
-                      </h3>
-                      <p className="font-pixel text-[8px] sm:text-[9px] text-cyan-300 flex items-center gap-1 mt-0.5">
-                        <Building2 className="w-3 h-3 text-cyan-400 flex-shrink-0" />
-                        <span className="truncate">{exp.company}</span>
-                      </p>
+
+                    <div className="flex flex-wrap items-center gap-1.5 font-pixel text-[7px] sm:text-[8px] text-slate-300">
+                      <span className="flex items-center gap-1 bg-[#162a42] px-2 py-0.5 sm:py-1 border border-black">
+                        <Calendar className="w-3 h-3 text-green-400 flex-shrink-0" />
+                        <span>{exp.period}</span>
+                      </span>
+                      <span className="flex items-center gap-1 bg-[#162a42] px-2 py-0.5 sm:py-1 border border-black">
+                        <MapPin className="w-3 h-3 text-red-400 flex-shrink-0" />
+                        <span className="truncate max-w-[150px] sm:max-w-none">{exp.location}</span>
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-1.5 font-pixel text-[7px] sm:text-[8px] text-slate-300">
-                    <span className="flex items-center gap-1 bg-[#162a42] px-1.5 sm:px-2 py-0.5 sm:py-1 border border-black">
-                      <Calendar className="w-3 h-3 text-green-400 flex-shrink-0" />
-                      <span>{exp.period}</span>
-                    </span>
-                    <span className="flex items-center gap-1 bg-[#162a42] px-1.5 sm:px-2 py-0.5 sm:py-1 border border-black">
-                      <MapPin className="w-3 h-3 text-red-400 flex-shrink-0" />
-                      <span className="truncate max-w-[140px] sm:max-w-none">{exp.location}</span>
-                    </span>
+                  {/* Role Title & Company Name (Placed below stage badge on mobile) */}
+                  <div className="pt-0.5">
+                    <h3 className="font-pixel text-xs sm:text-sm md:text-base text-yellow-400 leading-snug">
+                      {exp.role}
+                    </h3>
+                    <p className="font-pixel text-[8px] sm:text-[9px] text-cyan-300 flex items-center gap-1.5 mt-1">
+                      <Building2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                      <span className="truncate">{exp.company}</span>
+                    </p>
                   </div>
                 </div>
 
                 {/* Key Responsibilities */}
                 <div>
-                  <h4 className="font-pixel text-[8px] sm:text-[9px] text-green-400 mb-1.5 sm:mb-2">
+                  <h4 className="font-pixel text-[8px] sm:text-[9px] text-green-400 mb-2">
                     TANGGUNG JAWAB & PENCAPAIAN (QUEST OBJECTIVES):
                   </h4>
                   <ul className="space-y-1.5 font-vt323 text-base sm:text-lg text-slate-200">
                     {exp.points.map((pt, pIdx) => (
-                      <li key={pIdx} className="flex items-start gap-1.5 bg-[#0a1622] p-2 border border-slate-800 leading-snug">
+                      <li key={pIdx} className="flex items-start gap-2 bg-[#0a1622] p-2.5 border border-slate-800 leading-snug">
                         <span className="text-yellow-400 font-pixel text-[7px] sm:text-[8px] mt-1 flex-shrink-0">▶</span>
-                        <span className="leading-snug">{pt}</span>
+                        <span className="text-justify sm:text-left leading-relaxed">{pt}</span>
                       </li>
                     ))}
                   </ul>
@@ -114,7 +117,7 @@ export default function ExperiencePage() {
                 {/* Attached Certificate Button */}
                 {exp.certificateFile && (
                   <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                    <span className="font-pixel text-[7px] sm:text-[8px] text-slate-400">
+                    <span className="font-pixel text-[7px] sm:text-[8px] text-slate-400 text-center sm:text-left">
                       BUKTI DOKUMEN RESMI TERSEDIA
                     </span>
                     <button
@@ -125,7 +128,7 @@ export default function ExperiencePage() {
                           `Dokumen ${exp.company}`
                         )
                       }
-                      className="px-2.5 sm:px-3 py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[7px] sm:text-[8px] border border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-colors"
+                      className="px-3 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[7px] sm:text-[8px] border border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1.5 font-bold cursor-pointer transition-colors text-center"
                     >
                       <Eye className="w-3.5 h-3.5 flex-shrink-0" />
                       <span>LIHAT BUKTI SERTIFIKAT / DOKUMEN</span>
