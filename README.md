@@ -43,49 +43,6 @@ npm run dev
 
 Buka browser Anda di `http://localhost:3000` untuk melihat portofolio petualangan Anda!
 
----
-
-## 🐙 Panduan Push ke GitHub
-
-Ikuti langkah mudah berikut untuk mengunggah proyek ini ke repositori GitHub pribadi Anda:
-
-1. Buat repositori baru di [GitHub](https://github.com/new) (misalnya bernama `portfolio-retro-8bit` atau `portofolio-andhika`).
-2. Jangan centang opsi "Initialize with README" (karena repositori lokal sudah lengkap).
-3. Jalankan perintah berikut di terminal:
-
-```bash
-# Tambahkan URL repositori GitHub Anda (ganti USERNAME dan REPO_NAME)
-git remote add origin https://github.com/USERNAME/REPO_NAME.git
-
-# Pastikan branch berada di main
-git branch -M main
-
-# Push seluruh kode ke GitHub
-git push -u origin main
-```
-
----
-
-## ⚡ Panduan Deploy ke Vercel (Gratis & 1-Klik)
-
-### Cara 1: Menggunakan Web Dashboard Vercel (Direkomendasikan)
-1. Buka [vercel.com](https://vercel.com) dan login menggunakan akun GitHub Anda.
-2. Klik tombol **"Add New..."** lalu pilih **"Project"**.
-3. Pilih repositori GitHub `portfolio-retro-8bit` yang baru saja Anda push.
-4. Vercel akan otomatis mendeteksi konfigurasi **Next.js**.
-5. Klik **"Deploy"**. Dalam hitungan detik, website portofolio Anda sudah online dengan URL gratis (misal: `https://portofolio-andhika.vercel.app`)!
-
-### Cara 2: Menggunakan Vercel CLI (Terminal)
-```bash
-# Install Vercel CLI secara global (jika belum)
-npm install -g vercel
-
-# Jalankan perintah deploy
-vercel
-```
-
----
-
 ## 👤 Pengembang
 
 **Muhammad Andhika Fahrezzy**  
