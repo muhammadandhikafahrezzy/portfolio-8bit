@@ -13,8 +13,6 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Shield,
-  Zap,
 } from "lucide-react";
 
 // DATA LABYRINTH MAZE (19 cols x 21 rows)
@@ -120,7 +118,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       osc.start();
       osc.stop(ctx.currentTime + duration);
     } catch {
-      // Audio fallback
+      // Fallback
     }
   };
 
@@ -156,7 +154,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       nextDir: "NONE" as Direction,
       facing: "RIGHT" as "LEFT" | "RIGHT" | "UP" | "DOWN",
       animStep: 0,
-      speed: 0.092,
+      speed: 0.095,
     },
     snakes: [
       {
@@ -165,13 +163,13 @@ export default function AndhikaSnakeLabyrinthPage() {
         species: "NULL_POINTER",
         color: "#dc2626",
         headColor: "#ef4444",
-        x: 9.5,
+        x: 9,
         y: 8,
         dir: "LEFT" as Direction,
         speed: 0.076,
         mode: "chase" as const,
         nest: false,
-        spawnX: 9.5,
+        spawnX: 9,
         spawnY: 8,
         wiggle: 0,
       },
@@ -181,13 +179,13 @@ export default function AndhikaSnakeLabyrinthPage() {
         species: "MEMORY_LEAK",
         color: "#db2777",
         headColor: "#f472b6",
-        x: 8.5,
+        x: 8,
         y: 10,
         dir: "UP" as Direction,
         speed: 0.07,
         mode: "chase" as const,
         nest: true,
-        spawnX: 8.5,
+        spawnX: 8,
         spawnY: 10,
         wiggle: 0.5,
       },
@@ -197,13 +195,13 @@ export default function AndhikaSnakeLabyrinthPage() {
         species: "SYNTAX_BUG",
         color: "#0284c7",
         headColor: "#38bdf8",
-        x: 9.5,
+        x: 9,
         y: 10,
         dir: "UP" as Direction,
         speed: 0.068,
         mode: "chase" as const,
         nest: true,
-        spawnX: 9.5,
+        spawnX: 9,
         spawnY: 10,
         wiggle: 1.0,
       },
@@ -213,13 +211,13 @@ export default function AndhikaSnakeLabyrinthPage() {
         species: "DIRTY_DATA",
         color: "#ea580c",
         headColor: "#fb923c",
-        x: 10.5,
+        x: 10,
         y: 10,
         dir: "UP" as Direction,
         speed: 0.065,
         mode: "chase" as const,
         nest: true,
-        spawnX: 10.5,
+        spawnX: 10,
         spawnY: 10,
         wiggle: 1.5,
       },
@@ -228,6 +226,15 @@ export default function AndhikaSnakeLabyrinthPage() {
     snakesDefeatedCombo: 0,
     frameCount: 0,
   });
+
+  const isTileWalkable = (c: number, r: number, allowGate = false) => {
+    if (r < 0 || r >= ROWS) return false;
+    if (c < 0 || c >= COLS) return true; // Tunnel wrap-around
+    const cell = engineRef.current.grid[r][c];
+    if (cell === 1) return false; // Wall
+    if (cell === 4 && !allowGate) return false; // Gate
+    return true;
+  };
 
   const countBits = (grid: number[][]) => {
     let count = 0;
@@ -254,7 +261,7 @@ export default function AndhikaSnakeLabyrinthPage() {
       nextDir: "NONE",
       facing: "RIGHT",
       animStep: 0,
-      speed: 0.092,
+      speed: 0.095,
     };
     engineRef.current.snakes.forEach((s) => {
       s.x = s.spawnX;
@@ -340,32 +347,7 @@ export default function AndhikaSnakeLabyrinthPage() {
     touchStartPos.current = null;
   };
 
-  // Wall collisions
-  const isWall = (x: number, y: number, allowGate = false) => {
-    const col = Math.floor(x);
-    const row = Math.floor(y);
-    if (row < 0 || row >= ROWS) return true;
-    if (col < 0 || col >= COLS) return false; // Tunnel
-    const cell = engineRef.current.grid[row][col];
-    if (cell === 1) return true;
-    if (cell === 4 && !allowGate) return true;
-    return false;
-  };
-
-  const canMove = (x: number, y: number, dir: Direction, allowGate = false) => {
-    const offset = 0.45;
-    let targetX = x;
-    let targetY = y;
-
-    if (dir === "UP") targetY -= offset;
-    if (dir === "DOWN") targetY += offset;
-    if (dir === "LEFT") targetX -= offset;
-    if (dir === "RIGHT") targetX += offset;
-
-    return !isWall(targetX, targetY, allowGate);
-  };
-
-  // Main Game Loop
+  // Main Game Loop with Smooth Cornering Assist
   useEffect(() => {
     if (gameState !== "playing") return;
 
@@ -383,27 +365,80 @@ export default function AndhikaSnakeLabyrinthPage() {
       const grid = engine.grid;
       engine.frameCount++;
 
-      // --- 1. UPDATE PLAYER (ANDHIKA KNIGHT) ---
-      const isAlignedX = Math.abs(player.x - Math.round(player.x)) < 0.15;
-      const isAlignedY = Math.abs(player.y - Math.round(player.y)) < 0.15;
+      // --- 1. SMOOTH PLAYER CORNERING & MOVEMENT ---
+      const roundX = Math.round(player.x);
+      const roundY = Math.round(player.y);
+      const diffX = player.x - roundX;
+      const diffY = player.y - roundY;
 
-      if (player.nextDir !== "NONE" && isAlignedX && isAlignedY) {
-        if (canMove(Math.round(player.x), Math.round(player.y), player.nextDir)) {
-          player.x = Math.round(player.x);
-          player.y = Math.round(player.y);
+      // Handle Direction Change with Auto-Alignment Corner Assist
+      if (player.nextDir !== "NONE" && player.nextDir !== player.dir) {
+        const isReverse =
+          (player.dir === "LEFT" && player.nextDir === "RIGHT") ||
+          (player.dir === "RIGHT" && player.nextDir === "LEFT") ||
+          (player.dir === "UP" && player.nextDir === "DOWN") ||
+          (player.dir === "DOWN" && player.nextDir === "UP");
+
+        if (isReverse) {
           player.dir = player.nextDir;
           player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
           player.nextDir = "NONE";
+        } else if (player.nextDir === "UP" || player.nextDir === "DOWN") {
+          // Turning vertical while moving horizontal
+          const targetR = player.nextDir === "UP" ? roundY - 1 : roundY + 1;
+          if (Math.abs(diffX) < 0.45 && isTileWalkable(roundX, targetR)) {
+            player.x = roundX; // Snap smoothly to column center
+            player.dir = player.nextDir;
+            player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
+            player.nextDir = "NONE";
+          }
+        } else if (player.nextDir === "LEFT" || player.nextDir === "RIGHT") {
+          // Turning horizontal while moving vertical
+          const targetC = player.nextDir === "LEFT" ? roundX - 1 : roundX + 1;
+          if (Math.abs(diffY) < 0.45 && isTileWalkable(targetC, roundY)) {
+            player.y = roundY; // Snap smoothly to row center
+            player.dir = player.nextDir;
+            player.facing = player.nextDir as "LEFT" | "RIGHT" | "UP" | "DOWN";
+            player.nextDir = "NONE";
+          }
         }
       }
 
-      // Move player
-      if (canMove(player.x, player.y, player.dir)) {
-        if (player.dir === "UP") player.y -= player.speed;
-        if (player.dir === "DOWN") player.y += player.speed;
-        if (player.dir === "LEFT") player.x -= player.speed;
-        if (player.dir === "RIGHT") player.x += player.speed;
-        player.animStep = (player.animStep + 0.2) % 4;
+      // Step Forward in Current Direction
+      const pSpeed = player.speed;
+      if (player.dir === "UP") {
+        const nextY = player.y - pSpeed;
+        if (isTileWalkable(roundX, Math.floor(nextY))) {
+          player.y = nextY;
+          player.animStep = (player.animStep + 0.25) % 4;
+        } else {
+          // Stop at tile center
+          player.y = Math.max(roundY, nextY);
+        }
+      } else if (player.dir === "DOWN") {
+        const nextY = player.y + pSpeed;
+        if (isTileWalkable(roundX, Math.ceil(nextY))) {
+          player.y = nextY;
+          player.animStep = (player.animStep + 0.25) % 4;
+        } else {
+          player.y = Math.min(roundY, nextY);
+        }
+      } else if (player.dir === "LEFT") {
+        const nextX = player.x - pSpeed;
+        if (isTileWalkable(Math.floor(nextX), roundY)) {
+          player.x = nextX;
+          player.animStep = (player.animStep + 0.25) % 4;
+        } else {
+          player.x = Math.max(roundX, nextX);
+        }
+      } else if (player.dir === "RIGHT") {
+        const nextX = player.x + pSpeed;
+        if (isTileWalkable(Math.ceil(nextX), roundY)) {
+          player.x = nextX;
+          player.animStep = (player.animStep + 0.25) % 4;
+        } else {
+          player.x = Math.min(roundX, nextX);
+        }
       }
 
       // Tunnel Wrap
@@ -476,7 +511,7 @@ export default function AndhikaSnakeLabyrinthPage() {
 
         if (s.nest) {
           s.y -= 0.03;
-          if (s.y <= 8.5) {
+          if (s.y <= 8.0) {
             s.nest = false;
             s.y = 8;
             s.dir = "LEFT";
@@ -499,16 +534,26 @@ export default function AndhikaSnakeLabyrinthPage() {
           return;
         }
 
-        const sAlignedX = Math.abs(s.x - Math.round(s.x)) < 0.12;
-        const sAlignedY = Math.abs(s.y - Math.round(s.y)) < 0.12;
+        const sRoundX = Math.round(s.x);
+        const sRoundY = Math.round(s.y);
+        const sDiffX = Math.abs(s.x - sRoundX);
+        const sDiffY = Math.abs(s.y - sRoundY);
 
-        if (sAlignedX && sAlignedY) {
-          s.x = Math.round(s.x);
-          s.y = Math.round(s.y);
+        // Turn at tile centers / intersections
+        if (sDiffX < 0.08 && sDiffY < 0.08) {
+          s.x = sRoundX;
+          s.y = sRoundY;
 
-          const validDirs = possibleDirs.filter(
-            (d) => d !== oppositeDir[s.dir] && canMove(s.x, s.y, d, false)
-          );
+          const validDirs = possibleDirs.filter((d) => {
+            if (d === oppositeDir[s.dir]) return false;
+            let checkC = sRoundX;
+            let checkR = sRoundY;
+            if (d === "UP") checkR--;
+            if (d === "DOWN") checkR++;
+            if (d === "LEFT") checkC--;
+            if (d === "RIGHT") checkC++;
+            return isTileWalkable(checkC, checkR, false);
+          });
 
           if (validDirs.length > 0) {
             if (s.mode === "frightened") {
@@ -534,14 +579,14 @@ export default function AndhikaSnakeLabyrinthPage() {
               let minDist = Infinity;
 
               validDirs.forEach((d) => {
-                let testX = s.x;
-                let testY = s.y;
-                if (d === "UP") testY -= 1;
-                if (d === "DOWN") testY += 1;
-                if (d === "LEFT") testX -= 1;
-                if (d === "RIGHT") testX += 1;
+                let testC = sRoundX;
+                let testR = sRoundY;
+                if (d === "UP") testR--;
+                if (d === "DOWN") testR++;
+                if (d === "LEFT") testC--;
+                if (d === "RIGHT") testC++;
 
-                const dist = Math.hypot(testX - targetX, testY - targetY);
+                const dist = Math.hypot(testC - targetX, testR - targetY);
                 if (dist < minDist) {
                   minDist = dist;
                   bestDir = d;
@@ -550,7 +595,8 @@ export default function AndhikaSnakeLabyrinthPage() {
 
               s.dir = bestDir;
             }
-          } else if (canMove(s.x, s.y, oppositeDir[s.dir])) {
+          } else {
+            // Turn around if dead end
             s.dir = oppositeDir[s.dir];
           }
         }
@@ -665,20 +711,20 @@ export default function AndhikaSnakeLabyrinthPage() {
 
       // Power Crystal Golden Aura
       if (engine.powerTime > 0) {
-        ctx.fillStyle = engine.frameCount % 4 < 2 ? "rgba(250, 204, 21, 0.4)" : "rgba(56, 189, 248, 0.4)";
+        ctx.fillStyle = engine.frameCount % 4 < 2 ? "rgba(250, 204, 21, 0.45)" : "rgba(56, 189, 248, 0.45)";
         ctx.beginPath();
         ctx.arc(0, 0, pHeroSize * 0.75, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // If moving left, flip sprite
+      // Flip sprite if facing left
       if (player.facing === "LEFT") {
         ctx.scale(-1, 1);
       }
 
       const s = pHeroSize / 24; // Scale relative to 24x24 pixel grid
 
-      // 1. Hair / Brown Cap (x: -4..4, y: -10..-7)
+      // 1. Hair / Brown Cap
       ctx.fillStyle = "#854d0e";
       ctx.fillRect(-4 * s, -11 * s, 8 * s, 3 * s);
       ctx.fillStyle = "#a16207";
@@ -777,7 +823,7 @@ export default function AndhikaSnakeLabyrinthPage() {
           ctx.fillStyle = sHeadCol;
           ctx.fillRect(-sScale * 0.3, -sScale * 0.5, sScale * 0.6, sScale * 0.3);
 
-          // Snake Eyes (Angry / Slit pupils or scared dizzy eyes)
+          // Snake Eyes
           if (snk.mode === "frightened") {
             // Dizzy X eyes
             ctx.fillStyle = "#ffffff";
@@ -788,13 +834,11 @@ export default function AndhikaSnakeLabyrinthPage() {
 
             ctx.strokeStyle = "#ef4444";
             ctx.lineWidth = 1.5;
-            // X on left
             ctx.beginPath();
             ctx.moveTo(-sScale * 0.45, -sScale * 0.35);
             ctx.lineTo(-sScale * 0.25, -sScale * 0.15);
             ctx.moveTo(-sScale * 0.25, -sScale * 0.35);
             ctx.lineTo(-sScale * 0.45, -sScale * 0.15);
-            // X on right
             ctx.moveTo(sScale * 0.25, -sScale * 0.35);
             ctx.lineTo(sScale * 0.45, -sScale * 0.15);
             ctx.moveTo(sScale * 0.45, -sScale * 0.35);
@@ -931,7 +975,7 @@ export default function AndhikaSnakeLabyrinthPage() {
                   DATA KNIGHT VS ULER BUGS 🗡️🐍
                 </span>
                 <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
-                  Bantu Andhika mengumpulkan seluruh Data Bits di labirin dan hindari kejaran 4 Uler Bug!
+                  Bantu Andhika mengumpulkan seluruh Data Bits di labirin dan hindari kepungan 4 Uler Bug!
                 </p>
 
                 {/* Snake Monsters Lineup */}
