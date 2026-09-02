@@ -13,8 +13,6 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Shield,
-  Zap,
 } from "lucide-react";
 
 // NEW 100% FULLY CONNECTED HARD DATA DUNGEON LABYRINTH (21 cols x 21 rows)
@@ -117,7 +115,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       osc.start();
       osc.stop(ctx.currentTime + duration);
     } catch {
-      // Fallback
+      // Audio fallback
     }
   };
 
@@ -143,7 +141,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     });
   };
 
-  // Game Engine State: 4 Snakes starting from the 4 corners of the maze
+  // Game Engine State
   const engineRef = useRef({
     grid: HARD_DUNGEON_MAZE.map((row) => [...row]),
     player: {
@@ -226,7 +224,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
     if (r < 0 || r >= ROWS) return false;
     if (c < 0 || c >= COLS) return true; // Tunnel wrap-around
     const cell = engineRef.current.grid[r][c];
-    return cell !== 1; // 1 is wall, all others are open paths
+    return cell !== 1; // 1 is wall, all other values are open paths
   };
 
   const countBits = (grid: number[][]) => {
@@ -256,12 +254,68 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       animStep: 0,
       speed: 0.098,
     };
-    engineRef.current.snakes.forEach((s) => {
-      s.x = s.spawnX;
-      s.y = s.spawnY;
-      s.mode = "chase";
-      s.dir = s.id === "red_viper" ? "LEFT" : s.id === "pink_cobra" ? "RIGHT" : "UP";
-    });
+    engineRef.current.snakes = [
+      {
+        id: "red_viper",
+        name: "VIPER",
+        species: "DIRECT_HUNTER",
+        color: "#dc2626",
+        headColor: "#ef4444",
+        x: 19,
+        y: 1,
+        dir: "LEFT",
+        speed: 0.075,
+        mode: "chase",
+        spawnX: 19,
+        spawnY: 1,
+        wiggle: 0,
+      },
+      {
+        id: "pink_cobra",
+        name: "COBRA",
+        species: "LEAD_INTERCEPTOR",
+        color: "#db2777",
+        headColor: "#f472b6",
+        x: 1,
+        y: 1,
+        dir: "RIGHT",
+        speed: 0.073,
+        mode: "chase",
+        spawnX: 1,
+        spawnY: 1,
+        wiggle: 0.6,
+      },
+      {
+        id: "cyan_python",
+        name: "PYTHON",
+        species: "FLANK_PURSUER",
+        color: "#0284c7",
+        headColor: "#38bdf8",
+        x: 1,
+        y: 19,
+        dir: "UP",
+        speed: 0.071,
+        mode: "chase",
+        spawnX: 1,
+        spawnY: 19,
+        wiggle: 1.2,
+      },
+      {
+        id: "orange_mamba",
+        name: "MAMBA",
+        species: "SWARM_LURKER",
+        color: "#ea580c",
+        headColor: "#fb923c",
+        x: 19,
+        y: 19,
+        dir: "UP",
+        speed: 0.069,
+        mode: "chase",
+        spawnX: 19,
+        spawnY: 19,
+        wiggle: 1.8,
+      },
+    ];
     engineRef.current.powerTime = 0;
     engineRef.current.snakesDefeatedCombo = 0;
 
@@ -487,7 +541,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         }
       }
 
-      // --- 2. ACTIVE SNAKE CHASE ENGINE & ANTI-COLLISION SEPARATION ---
+      // --- 2. ACTIVE SNAKE CHASE ENGINE (CONTINUOUS TILE-BASED NAVIGATION) ---
       const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
       const oppositeDir: Record<Direction, Direction> = {
         UP: "DOWN",
@@ -500,7 +554,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
       snakes.forEach((s) => {
         s.wiggle += 0.22;
 
-        // Eaten snake returns to corner to revive
+        const curSpeed =
+          s.mode === "frightened" || engine.powerTime > 0 ? s.speed * 0.55 : s.speed;
+
+        // Eaten snake returns to corner spawn to revive
         if (s.mode === "eaten") {
           const dx = s.spawnX - s.x;
           const dy = s.spawnY - s.y;
@@ -516,118 +573,129 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           return;
         }
 
-        const sRoundX = Math.round(s.x);
-        const sRoundY = Math.round(s.y);
-        const sDiffX = Math.abs(s.x - sRoundX);
-        const sDiffY = Math.abs(s.y - sRoundY);
+        // Calculate step in current direction
+        let nextX = s.x;
+        let nextY = s.y;
+        if (s.dir === "UP") nextY -= curSpeed;
+        if (s.dir === "DOWN") nextY += curSpeed;
+        if (s.dir === "LEFT") nextX -= curSpeed;
+        if (s.dir === "RIGHT") nextX += curSpeed;
 
-        // Turn decision at intersections
-        if (sDiffX < 0.09 && sDiffY < 0.09) {
-          s.x = sRoundX;
-          s.y = sRoundY;
+        // Check if snake is crossing or reaching the next integer tile
+        let atIntersection = false;
+        if (s.dir === "LEFT" && Math.floor(s.x) !== Math.floor(nextX)) {
+          s.x = Math.floor(s.x);
+          atIntersection = true;
+        } else if (s.dir === "RIGHT" && Math.ceil(s.x) !== Math.ceil(nextX)) {
+          s.x = Math.ceil(s.x);
+          atIntersection = true;
+        } else if (s.dir === "UP" && Math.floor(s.y) !== Math.floor(nextY)) {
+          s.y = Math.floor(s.y);
+          atIntersection = true;
+        } else if (s.dir === "DOWN" && Math.ceil(s.y) !== Math.ceil(nextY)) {
+          s.y = Math.ceil(s.y);
+          atIntersection = true;
+        } else {
+          s.x = nextX;
+          s.y = nextY;
+        }
 
-          // 1. All valid walkable directions
-          const walkableDirs = possibleDirs.filter((d) => {
+        // Tunnel Wrap
+        if (s.x < -0.5) s.x = COLS - 0.5;
+        if (s.x > COLS - 0.5) s.x = -0.5;
+
+        // Make turning decisions at tile intersections
+        if (atIntersection) {
+          const curCol = Math.round(s.x);
+          const curRow = Math.round(s.y);
+
+          // Find all walkable directions not directly opposite
+          const walkable = possibleDirs.filter((d) => {
             if (d === oppositeDir[s.dir]) return false;
-            let checkC = sRoundX;
-            let checkR = sRoundY;
-            if (d === "UP") checkR--;
-            if (d === "DOWN") checkR++;
-            if (d === "LEFT") checkC--;
-            if (d === "RIGHT") checkC++;
-            return isTileWalkable(checkC, checkR);
+            let c = curCol;
+            let r = curRow;
+            if (d === "UP") r--;
+            if (d === "DOWN") r++;
+            if (d === "LEFT") c--;
+            if (d === "RIGHT") c++;
+            return isTileWalkable(c, r);
           });
 
-          // 2. Anti-Stacking: Don't pick directions that would collide with another active snake
-          const nonCollidingDirs = walkableDirs.filter((d) => {
-            let checkC = sRoundX;
-            let checkR = sRoundY;
-            if (d === "UP") checkR--;
-            if (d === "DOWN") checkR++;
-            if (d === "LEFT") checkC--;
-            if (d === "RIGHT") checkC++;
+          // Prevent overlapping with another active snake
+          const nonColliding = walkable.filter((d) => {
+            let c = curCol;
+            let r = curRow;
+            if (d === "UP") r--;
+            if (d === "DOWN") r++;
+            if (d === "LEFT") c--;
+            if (d === "RIGHT") c++;
 
-            const hasAnotherSnake = snakes.some((other) => {
+            return !snakes.some((other) => {
               if (other.id === s.id || other.mode === "eaten") return false;
-              const distToOther = Math.hypot(other.x - checkC, other.y - checkR);
-              return distToOther < 0.95;
+              return Math.hypot(other.x - c, other.y - r) < 1.05;
             });
-
-            return !hasAnotherSnake;
           });
 
-          const candidates = nonCollidingDirs.length > 0 ? nonCollidingDirs : walkableDirs;
+          const candidates = nonColliding.length > 0 ? nonColliding : walkable;
 
           if (candidates.length > 0) {
             if (s.mode === "frightened" || engine.powerTime > 0) {
-              // Frightened: Run away from player!
-              let bestEscapeDir = candidates[0];
-              let maxDist = -Infinity;
-
+              // Run away from player
+              let bestD = candidates[0];
+              let maxDist = -1;
               candidates.forEach((d) => {
-                let testC = sRoundX;
-                let testR = sRoundY;
-                if (d === "UP") testR--;
-                if (d === "DOWN") testR++;
-                if (d === "LEFT") testC--;
-                if (d === "RIGHT") testC++;
-
-                const dist = Math.hypot(testC - player.x, testR - player.y);
+                let c = curCol;
+                let r = curRow;
+                if (d === "UP") r--;
+                if (d === "DOWN") r++;
+                if (d === "LEFT") c--;
+                if (d === "RIGHT") c++;
+                const dist = Math.hypot(c - player.x, r - player.y);
                 if (dist > maxDist) {
                   maxDist = dist;
-                  bestEscapeDir = d;
+                  bestD = d;
                 }
               });
-
-              s.dir = bestEscapeDir;
+              s.dir = bestD;
             } else {
-              // ACTIVE CHASE: ALL 4 SNAKES HUNT TOWARDS THE PLAYER
+              // ACTIVE CHASE: TARGET PLAYER POSITION
               let targetX = player.x;
               let targetY = player.y;
 
               if (s.id === "pink_cobra") {
-                // Cobra anticipates 1 tile ahead of player
-                if (player.dir === "UP") targetY -= 1;
-                if (player.dir === "DOWN") targetY += 1;
-                if (player.dir === "LEFT") targetX -= 1;
-                if (player.dir === "RIGHT") targetX += 1;
+                // Cobra anticipates 2 tiles ahead of player
+                if (player.dir === "UP") targetY -= 2;
+                if (player.dir === "DOWN") targetY += 2;
+                if (player.dir === "LEFT") targetX -= 2;
+                if (player.dir === "RIGHT") targetX += 2;
+              } else if (s.id === "cyan_python") {
+                // Python flanks
+                targetX = player.x + (player.x - snakes[0].x > 0 ? 1 : -1);
+                targetY = player.y + (player.y - snakes[0].y > 0 ? 1 : -1);
               }
 
-              let bestDir = candidates[0];
+              let bestD = candidates[0];
               let minDist = Infinity;
-
               candidates.forEach((d) => {
-                let testC = sRoundX;
-                let testR = sRoundY;
-                if (d === "UP") testR--;
-                if (d === "DOWN") testR++;
-                if (d === "LEFT") testC--;
-                if (d === "RIGHT") testC++;
-
-                const dist = Math.hypot(testC - targetX, testR - targetY);
+                let c = curCol;
+                let r = curRow;
+                if (d === "UP") r--;
+                if (d === "DOWN") r++;
+                if (d === "LEFT") c--;
+                if (d === "RIGHT") c++;
+                const dist = Math.hypot(c - targetX, r - targetY);
                 if (dist < minDist) {
                   minDist = dist;
-                  bestDir = d;
+                  bestD = d;
                 }
               });
-
-              s.dir = bestDir;
+              s.dir = bestD;
             }
           } else {
             // Dead end reverse
             s.dir = oppositeDir[s.dir];
           }
         }
-
-        // Advance Snake forward
-        const curSpeed = (s.mode === "frightened" || engine.powerTime > 0) ? s.speed * 0.52 : s.speed;
-        if (s.dir === "UP") s.y -= curSpeed;
-        if (s.dir === "DOWN") s.y += curSpeed;
-        if (s.dir === "LEFT") s.x -= curSpeed;
-        if (s.dir === "RIGHT") s.x += curSpeed;
-
-        if (s.x < -0.5) s.x = COLS - 0.5;
-        if (s.x > COLS - 0.5) s.x = -0.5;
 
         // --- 3. PLAYER & SNAKE COLLISION ---
         const distToPlayer = Math.hypot(s.x - player.x, s.y - player.y);
