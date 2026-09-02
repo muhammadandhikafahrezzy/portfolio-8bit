@@ -634,13 +634,11 @@ export default function AndhikaHardDungeonLabyrinthPage() {
         if (distToPlayer < 0.75) {
           // IF POWER CRYSTAL ACTIVE OR SNAKE FRIGHTENED: PLAYER ALWAYS DEFEATS THE SNAKE!
           if (engine.powerTime > 0 || s.mode === "frightened") {
-            if (s.mode !== "eaten") {
-              s.mode = "eaten";
-              engine.snakesDefeatedCombo++;
-              const bonus = 200 * Math.pow(2, Math.min(3, engine.snakesDefeatedCombo - 1));
-              setScore((prev) => prev + bonus);
-              playDefeatSnakeSound();
-            }
+            s.mode = "eaten";
+            engine.snakesDefeatedCombo++;
+            const bonus = 200 * Math.pow(2, Math.min(3, engine.snakesDefeatedCombo - 1));
+            setScore((prev) => prev + bonus);
+            playDefeatSnakeSound();
           } else if (s.mode === "chase") {
             // PLAYER HIT ONLY WHEN NO POWER CRYSTAL ACTIVE
             playHurtSound();
