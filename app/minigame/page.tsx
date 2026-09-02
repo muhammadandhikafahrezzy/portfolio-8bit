@@ -1,802 +1,794 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { soundManager } from "@/components/SoundManager";
 import confetti from "canvas-confetti";
 import {
-  Gamepad2,
   Trophy,
   RotateCcw,
   Play,
-  Flame,
-  Shield,
   Heart,
-  Skull,
   ArrowRight,
   Sparkles,
+  Zap,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
-interface Block {
-  id: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  type: "ground" | "brick" | "qblock" | "pipe" | "spike" | "moving" | "castle" | "pole";
-  hit?: boolean;
-  bouncing?: number;
-  hasCoin?: boolean;
-  minX?: number;
-  maxX?: number;
-  vx?: number;
-}
+// PAC-MAN MAZE DEFINITION (19 columns x 21 rows)
+// 0: Empty/Walkway (no dot)
+// 1: Wall
+// 2: Small Data Dot
+// 3: Power Pellet (Energizer)
+// 4: Ghost Gate/Door
+// 5: Ghost House Inside
+// 6: Wrap-around Tunnel
+const MAZE_TEMPLATE = [
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 3, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 3, 1],
+  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+  [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1],
+  [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+  [1, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1],
+  [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+  [1, 1, 1, 1, 2, 1, 0, 1, 1, 4, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+  [6, 0, 0, 0, 2, 0, 0, 1, 5, 5, 5, 1, 0, 0, 2, 0, 0, 0, 6],
+  [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+  [0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0],
+  [1, 1, 1, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1],
+  [1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1],
+  [1, 3, 2, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 1, 2, 3, 1],
+  [1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1],
+  [1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+  [1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
 
-interface Enemy {
-  id: number;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  type: "slime" | "piranha" | "bat";
-  vx: number;
-  vy: number;
-  alive: boolean;
-  originY?: number;
-  animTimer?: number;
-}
+const COLS = 19;
+const ROWS = 21;
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
+type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT" | "NONE";
+
+interface Ghost {
+  id: string;
+  name: string;
+  role: string;
   color: string;
-  size: number;
-}
-
-interface Coin {
-  id: number;
   x: number;
   y: number;
-  collected: boolean;
+  dir: Direction;
+  targetDir: Direction;
+  speed: number;
+  mode: "chase" | "frightened" | "eaten";
+  house: boolean;
+  spawnX: number;
+  spawnY: number;
 }
 
-export default function MinigamePage() {
+export default function PacmanArcadePage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "gameover" | "victory">("idle");
-  const [difficulty, setDifficulty] = useState<"standard" | "kaizo">("standard");
   const [score, setScore] = useState<number>(0);
-  const [coins, setCoins] = useState<number>(0);
+  const [highScore, setHighScore] = useState<number>(10000);
   const [lives, setLives] = useState<number>(3);
-  const [deaths, setDeaths] = useState<number>(0);
-  const [timeLeft, setTimeLeft] = useState<number>(300);
+  const [level, setLevel] = useState<number>(1);
+  const [frightenedTimer, setFrightenedTimer] = useState<number>(0);
+  const [dotsLeft, setDotsLeft] = useState<number>(0);
+  const [audioMuted, setAudioMuted] = useState<boolean>(false);
 
-  // Controller states
-  const keys = useRef<{ left: boolean; right: boolean; jump: boolean; run: boolean }>({
-    left: false,
-    right: false,
-    jump: false,
-    run: false,
-  });
+  // High score from local storage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("pacman_high_score");
+      if (saved) setHighScore(parseInt(saved, 10));
+    }
+  }, []);
+
+  // Web Audio Synth for authentic Pac-Man SFX
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const playWaka = useRef<boolean>(false);
+
+  const initAudio = () => {
+    if (!audioCtxRef.current && typeof window !== "undefined") {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) audioCtxRef.current = new AudioCtx();
+    }
+  };
+
+  const playTone = (freq: number, type: OscillatorType, duration: number, vol = 0.08) => {
+    if (audioMuted) return;
+    try {
+      initAudio();
+      if (!audioCtxRef.current) return;
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch {
+      // Audio fallback silent
+    }
+  };
+
+  const playChompSound = () => {
+    playWaka.current = !playWaka.current;
+    playTone(playWaka.current ? 360 : 480, "triangle", 0.08, 0.06);
+  };
+
+  const playPowerSound = () => {
+    playTone(600, "square", 0.2, 0.1);
+    setTimeout(() => playTone(800, "square", 0.2, 0.1), 100);
+  };
+
+  const playEatGhostSound = () => {
+    playTone(850, "sine", 0.25, 0.15);
+  };
+
+  const playDeathSound = () => {
+    [400, 350, 300, 250, 200, 150, 100].forEach((freq, idx) => {
+      setTimeout(() => playTone(freq, "sawtooth", 0.1, 0.12), idx * 80);
+    });
+  };
 
   // Game Engine State
-  const engineState = useRef({
-    player: {
-      x: 60,
-      y: 300,
-      w: 22,
-      h: 30,
-      vx: 0,
-      vy: 0,
-      grounded: false,
-      facing: "right" as "left" | "right",
-      isJumping: false,
-      invulnerable: 0,
-      deadAnim: false,
-      deadTimer: 0,
+  const engineRef = useRef({
+    grid: MAZE_TEMPLATE.map((row) => [...row]),
+    pacman: {
+      x: 9.5,
+      y: 16,
+      dir: "NONE" as Direction,
+      nextDir: "NONE" as Direction,
+      mouthAngle: 0.2,
+      mouthSpeed: 0.04,
+      speed: 0.09,
     },
-    cameraX: 0,
-    blocks: [] as Block[],
-    enemies: [] as Enemy[],
-    coins: [] as Coin[],
-    particles: [] as Particle[],
-    flagpole: { x: 3050, y: 120, h: 260, flagY: 130, reached: false },
-    castle: { x: 3120, y: 240, w: 120, h: 140 },
+    ghosts: [
+      {
+        id: "blinky",
+        name: "BLINKY",
+        role: "NULL_POINTER",
+        color: "#ef4444",
+        x: 9.5,
+        y: 8,
+        dir: "LEFT" as Direction,
+        targetDir: "LEFT" as Direction,
+        speed: 0.075,
+        mode: "chase" as const,
+        house: false,
+        spawnX: 9.5,
+        spawnY: 8,
+      },
+      {
+        id: "pinky",
+        name: "PINKY",
+        role: "MEMORY_LEAK",
+        color: "#ec4899",
+        x: 8.5,
+        y: 10,
+        dir: "UP" as Direction,
+        targetDir: "UP" as Direction,
+        speed: 0.07,
+        mode: "chase" as const,
+        house: true,
+        spawnX: 8.5,
+        spawnY: 10,
+      },
+      {
+        id: "inky",
+        name: "INKY",
+        role: "SYNTAX_ERR",
+        color: "#06b6d4",
+        x: 9.5,
+        y: 10,
+        dir: "UP" as Direction,
+        targetDir: "UP" as Direction,
+        speed: 0.068,
+        mode: "chase" as const,
+        house: true,
+        spawnX: 9.5,
+        spawnY: 10,
+      },
+      {
+        id: "clyde",
+        name: "CLYDE",
+        role: "DIRTY_DATA",
+        color: "#f97316",
+        x: 10.5,
+        y: 10,
+        dir: "UP" as Direction,
+        targetDir: "UP" as Direction,
+        speed: 0.065,
+        mode: "chase" as const,
+        house: true,
+        spawnX: 10.5,
+        spawnY: 10,
+      },
+    ] as Ghost[],
+    frightenedTime: 0,
+    ghostsEatenCombo: 0,
     animFrame: 0,
-    score: 0,
-    coinCount: 0,
-    lives: 3,
-    deaths: 0,
-    timeLeft: 300,
-    timerCount: 0,
+    lastFrameTime: 0,
   });
 
-  const buildLevel = () => {
-    const blocks: Block[] = [];
-    const enemies: Enemy[] = [];
-    const levelCoins: Coin[] = [];
-
-    const addGround = (startX: number, width: number, y = 380, h = 70) => {
-      blocks.push({
-        id: blocks.length + 1,
-        x: startX,
-        y,
-        w: width,
-        h,
-        type: "ground",
-      });
-    };
-
-    // --- Section 1: Intro (0 - 800px) ---
-    addGround(0, 480);
-    blocks.push({ id: 101, x: 180, y: 260, w: 32, h: 32, type: "qblock", hasCoin: true });
-    blocks.push({ id: 102, x: 212, y: 260, w: 32, h: 32, type: "brick" });
-    blocks.push({ id: 103, x: 244, y: 260, w: 32, h: 32, type: "qblock", hasCoin: true });
-    blocks.push({ id: 104, x: 212, y: 160, w: 32, h: 32, type: "qblock", hasCoin: true });
-
-    blocks.push({ id: 105, x: 360, y: 300, w: 48, h: 80, type: "pipe" });
-    enemies.push({ id: 201, x: 384, y: 270, w: 24, h: 30, type: "piranha", vx: 0, vy: 0, alive: true, originY: 300 });
-    enemies.push({ id: 202, x: 280, y: 350, w: 26, h: 24, type: "slime", vx: -1.2, vy: 0, alive: true });
-
-    // PIT 1: 480 to 580
-    addGround(580, 400);
-    blocks.push({
-      id: 106,
-      x: 490,
-      y: 320,
-      w: 64,
-      h: 16,
-      type: "moving",
-      minX: 470,
-      maxX: 590,
-      vx: 1.5,
-    });
-
-    blocks.push({ id: 107, x: 680, y: 364, w: 40, h: 16, type: "spike" });
-    enemies.push({ id: 203, x: 800, y: 350, w: 26, h: 24, type: "slime", vx: -1.4, vy: 0, alive: true });
-    enemies.push({ id: 204, x: 920, y: 350, w: 26, h: 24, type: "slime", vx: -1.4, vy: 0, alive: true });
-
-    // --- Section 2: Flying Bats & Double Pipes (980 - 1800px) ---
-    addGround(1100, 500);
-    blocks.push({ id: 108, x: 1140, y: 250, w: 32, h: 32, type: "brick" });
-    blocks.push({ id: 109, x: 1172, y: 250, w: 32, h: 32, type: "qblock", hasCoin: true });
-    blocks.push({ id: 110, x: 1204, y: 250, w: 32, h: 32, type: "brick" });
-    blocks.push({ id: 111, x: 1236, y: 250, w: 32, h: 32, type: "brick" });
-
-    enemies.push({ id: 205, x: 1350, y: 180, w: 28, h: 24, type: "bat", vx: -1.8, vy: 0, alive: true, originY: 180 });
-    blocks.push({ id: 112, x: 1420, y: 270, w: 48, h: 110, type: "pipe" });
-    enemies.push({ id: 206, x: 1444, y: 240, w: 24, h: 30, type: "piranha", vx: 0, vy: 0, alive: true, originY: 270 });
-
-    // PIT 3: 1600 to 1780
-    blocks.push({
-      id: 113,
-      x: 1620,
-      y: 330,
-      w: 56,
-      h: 16,
-      type: "moving",
-      minX: 1610,
-      maxX: 1750,
-      vx: 2.0,
-    });
-
-    // --- Section 3: Kaizo Gauntlet (1780 - 2700px) ---
-    addGround(1780, 550);
-    blocks.push({ id: 114, x: 1900, y: 364, w: 48, h: 16, type: "spike" });
-    blocks.push({ id: 115, x: 2100, y: 364, w: 48, h: 16, type: "spike" });
-
-    blocks.push({ id: 116, x: 1960, y: 240, w: 80, h: 20, type: "ground" });
-    levelCoins.push({ id: 301, x: 1980, y: 200, collected: false });
-    levelCoins.push({ id: 302, x: 2020, y: 200, collected: false });
-
-    enemies.push({ id: 207, x: 2150, y: 160, w: 28, h: 24, type: "bat", vx: -2.2, vy: 0, alive: true, originY: 160 });
-    enemies.push({ id: 208, x: 2280, y: 350, w: 26, h: 24, type: "slime", vx: -1.8, vy: 0, alive: true });
-
-    // PIT 4: 2330 to 2480
-    blocks.push({ id: 117, x: 2370, y: 310, w: 44, h: 16, type: "moving", minX: 2350, maxX: 2460, vx: 2.2 });
-
-    // --- Section 4: Final Staircase & Castle (2480 - 3300px) ---
-    addGround(2480, 820);
-    for (let step = 0; step < 7; step++) {
-      for (let hStep = 0; hStep <= step; hStep++) {
-        blocks.push({
-          id: 500 + step * 10 + hStep,
-          x: 2700 + step * 32,
-          y: 380 - (hStep + 1) * 32,
-          w: 32,
-          h: 32,
-          type: "brick",
-        });
+  // Calculate total dots
+  const countDots = (grid: number[][]) => {
+    let count = 0;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (grid[r][c] === 2 || grid[r][c] === 3) count++;
       }
     }
-    blocks.push({ id: 600, x: 3040, y: 348, w: 32, h: 32, type: "brick" });
-
-    [120, 200, 280, 620, 750, 1160, 1220, 1500, 2550, 2620, 2800].forEach((cx, idx) => {
-      levelCoins.push({ id: 400 + idx, x: cx, y: 320, collected: false });
-    });
-
-    return { blocks, enemies, coins: levelCoins };
+    return count;
   };
 
-  const startNewGame = (customDiff?: "standard" | "kaizo") => {
-    const activeDiff = customDiff || difficulty;
-    const { blocks, enemies, coins: levelCoins } = buildLevel();
+  // Start / Restart Game
+  const startGame = useCallback(() => {
+    initAudio();
+    soundManager.playLevelUp();
+    const newGrid = MAZE_TEMPLATE.map((row) => [...row]);
+    const totalDots = countDots(newGrid);
 
-    engineState.current = {
-      player: {
-        x: 60,
-        y: 300,
-        w: 22,
-        h: 30,
-        vx: 0,
-        vy: 0,
-        grounded: false,
-        facing: "right",
-        isJumping: false,
-        invulnerable: 0,
-        deadAnim: false,
-        deadTimer: 0,
-      },
-      cameraX: 0,
-      blocks,
-      enemies,
-      coins: levelCoins,
-      particles: [],
-      flagpole: { x: 3050, y: 120, h: 260, flagY: 130, reached: false },
-      castle: { x: 3120, y: 240, w: 120, h: 140 },
-      animFrame: 0,
-      score: 0,
-      coinCount: 0,
-      lives: activeDiff === "kaizo" ? 1 : 3,
-      deaths: engineState.current.deaths,
-      timeLeft: 300,
-      timerCount: 0,
+    engineRef.current.grid = newGrid;
+    engineRef.current.pacman = {
+      x: 9,
+      y: 16,
+      dir: "NONE",
+      nextDir: "NONE",
+      mouthAngle: 0.2,
+      mouthSpeed: 0.04,
+      speed: 0.09,
     };
+    engineRef.current.ghosts.forEach((g) => {
+      g.x = g.spawnX;
+      g.y = g.spawnY;
+      g.mode = "chase";
+      g.house = g.id !== "blinky";
+      g.dir = g.id === "blinky" ? "LEFT" : "UP";
+    });
+    engineRef.current.frightenedTime = 0;
+    engineRef.current.ghostsEatenCombo = 0;
 
     setScore(0);
-    setCoins(0);
-    setLives(activeDiff === "kaizo" ? 1 : 3);
-    setTimeLeft(300);
+    setLives(3);
+    setLevel(1);
+    setDotsLeft(totalDots);
     setGameState("playing");
-    soundManager.playPowerup();
+  }, []);
+
+  // Direction Helper
+  const setNextDirection = (dir: Direction) => {
+    engineRef.current.pacman.nextDir = dir;
+    if (gameState === "idle") {
+      startGame();
+    }
   };
 
+  // Keyboard Event Listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.current.left = true;
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.current.right = true;
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W" || e.key === " ") {
-        if (!keys.current.jump) soundManager.playJump();
-        keys.current.jump = true;
+      switch (e.key) {
+        case "ArrowUp":
+        case "w":
+        case "W":
+          e.preventDefault();
+          setNextDirection("UP");
+          break;
+        case "ArrowDown":
+        case "s":
+        case "S":
+          e.preventDefault();
+          setNextDirection("DOWN");
+          break;
+        case "ArrowLeft":
+        case "a":
+        case "A":
+          e.preventDefault();
+          setNextDirection("LEFT");
+          break;
+        case "ArrowRight":
+        case "d":
+        case "D":
+          e.preventDefault();
+          setNextDirection("RIGHT");
+          break;
+        case " ":
+          if (gameState !== "playing") startGame();
+          break;
       }
-      if (e.key === "Shift" || e.key === "j" || e.key === "J") keys.current.run = true;
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.current.left = false;
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.current.right = false;
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W" || e.key === " ") keys.current.jump = false;
-      if (e.key === "Shift" || e.key === "j" || e.key === "J") keys.current.run = false;
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [gameState, startGame]);
 
+  // Touch Swipe for Mobile
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartPos.current) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartPos.current.x;
+    const dy = touch.clientY - touchStartPos.current.y;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    if (Math.max(absX, absY) > 20) {
+      if (absX > absY) {
+        setNextDirection(dx > 0 ? "RIGHT" : "LEFT");
+      } else {
+        setNextDirection(dy > 0 ? "DOWN" : "UP");
+      }
+    }
+    touchStartPos.current = null;
+  };
+
+  // Wall collision check
+  const isWall = (x: number, y: number, allowGate = false) => {
+    const col = Math.floor(x);
+    const row = Math.floor(y);
+    if (row < 0 || row >= ROWS) return true;
+    if (col < 0 || col >= COLS) return false; // Tunnel
+    const cell = engineRef.current.grid[row][col];
+    if (cell === 1) return true;
+    if (cell === 4 && !allowGate) return true;
+    return false;
+  };
+
+  const canMove = (x: number, y: number, dir: Direction, allowGate = false) => {
+    const offset = 0.45;
+    let targetX = x;
+    let targetY = y;
+
+    if (dir === "UP") targetY -= offset;
+    if (dir === "DOWN") targetY += offset;
+    if (dir === "LEFT") targetX -= offset;
+    if (dir === "RIGHT") targetX += offset;
+
+    return !isWall(targetX, targetY, allowGate);
+  };
+
+  // Main Game Loop
   useEffect(() => {
-    let animId: number;
+    if (gameState !== "playing") return;
+
+    let animationFrameId: number;
 
     const gameLoop = () => {
-      const cvs = canvasRef.current;
-      if (!cvs) return;
-      const ctx = cvs.getContext("2d");
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const state = engineState.current;
-      state.animFrame++;
+      const engine = engineRef.current;
+      const pacman = engine.pacman;
+      const ghosts = engine.ghosts;
+      const grid = engine.grid;
 
-      if (gameState === "playing") {
-        state.timerCount++;
-        if (state.timerCount >= 60) {
-          state.timerCount = 0;
-          state.timeLeft = Math.max(0, state.timeLeft - 1);
-          setTimeLeft(state.timeLeft);
-          if (state.timeLeft <= 0) {
-            handlePlayerDeath();
-          }
+      // --- 1. UPDATE PAC-MAN ---
+      // Try turning into next direction if aligned
+      const isAlignedX = Math.abs(pacman.x - Math.round(pacman.x)) < 0.15;
+      const isAlignedY = Math.abs(pacman.y - Math.round(pacman.y)) < 0.15;
+
+      if (pacman.nextDir !== "NONE" && isAlignedX && isAlignedY) {
+        if (canMove(Math.round(pacman.x), Math.round(pacman.y), pacman.nextDir)) {
+          pacman.x = Math.round(pacman.x);
+          pacman.y = Math.round(pacman.y);
+          pacman.dir = pacman.nextDir;
+          pacman.nextDir = "NONE";
         }
       }
 
-      // Physics & Logic Updates
-      if (gameState === "playing" && !state.player.deadAnim && !state.flagpole.reached) {
-        const p = state.player;
-        const maxSpeed = keys.current.run ? 5.2 : 3.4;
-        const accel = keys.current.run ? 0.45 : 0.35;
-        const friction = 0.82;
-        const gravity = 0.58;
+      // Move in current direction
+      if (canMove(pacman.x, pacman.y, pacman.dir)) {
+        if (pacman.dir === "UP") pacman.y -= pacman.speed;
+        if (pacman.dir === "DOWN") pacman.y += pacman.speed;
+        if (pacman.dir === "LEFT") pacman.x -= pacman.speed;
+        if (pacman.dir === "RIGHT") pacman.x += pacman.speed;
 
-        if (keys.current.left) {
-          p.vx = Math.max(p.vx - accel, -maxSpeed);
-          p.facing = "left";
-        } else if (keys.current.right) {
-          p.vx = Math.min(p.vx + accel, maxSpeed);
-          p.facing = "right";
-        } else {
-          p.vx *= friction;
-          if (Math.abs(p.vx) < 0.1) p.vx = 0;
-        }
-
-        p.x += p.vx;
-
-        for (const b of state.blocks) {
-          if (b.type === "spike") continue;
-          if (
-            p.x < b.x + b.w &&
-            p.x + p.w > b.x &&
-            p.y < b.y + b.h &&
-            p.y + p.h > b.y
-          ) {
-            if (p.vx > 0) p.x = b.x - p.w;
-            else if (p.vx < 0) p.x = b.x + b.w;
-            p.vx = 0;
-          }
-        }
-
-        if (keys.current.jump && p.grounded && !p.isJumping) {
-          p.vy = keys.current.run ? -11.5 : -10.2;
-          p.grounded = false;
-          p.isJumping = true;
-        }
-        if (!keys.current.jump && p.vy < -4) {
-          p.vy = -4;
-        }
-
-        p.vy += gravity;
-        p.y += p.vy;
-        p.grounded = false;
-
-        for (const b of state.blocks) {
-          if (b.type === "spike") {
-            if (
-              p.x < b.x + b.w - 4 &&
-              p.x + p.w > b.x + 4 &&
-              p.y < b.y + b.h &&
-              p.y + p.h > b.y + 4
-            ) {
-              handlePlayerDeath();
-            }
-            continue;
-          }
-
-          if (
-            p.x < b.x + b.w &&
-            p.x + p.w > b.x &&
-            p.y < b.y + b.h &&
-            p.y + p.h > b.y
-          ) {
-            if (p.vy > 0 && p.y + p.h - p.vy <= b.y + 10) {
-              p.y = b.y - p.h;
-              p.vy = 0;
-              p.grounded = true;
-              p.isJumping = false;
-
-              if (b.type === "moving" && b.vx) {
-                p.x += b.vx;
-              }
-            } else if (p.vy < 0 && p.y - p.vy >= b.y + b.h - 10) {
-              p.y = b.y + b.h;
-              p.vy = 1;
-              soundManager.playBlockBump();
-
-              if (b.type === "qblock" && !b.hit) {
-                b.hit = true;
-                b.bouncing = 6;
-                soundManager.playPowerup();
-                state.coinCount += 1;
-                state.score += 200;
-                setCoins(state.coinCount);
-                setScore(state.score);
-                state.particles.push({
-                  x: b.x + 16,
-                  y: b.y - 10,
-                  vx: (Math.random() - 0.5) * 2,
-                  vy: -4,
-                  life: 30,
-                  color: "#facc15",
-                  size: 4,
-                });
-              } else if (b.type === "brick") {
-                b.bouncing = 4;
-              }
-            }
-          }
-        }
-
-        if (p.y > 450) {
-          handlePlayerDeath();
-        }
-
-        state.cameraX = Math.max(0, p.x - 240);
-
-        for (const b of state.blocks) {
-          if (b.type === "moving" && b.vx && b.minX !== undefined && b.maxX !== undefined) {
-            b.x += b.vx;
-            if (b.x >= b.maxX || b.x <= b.minX) b.vx *= -1;
-          }
-          if (b.bouncing && b.bouncing > 0) b.bouncing -= 0.5;
-        }
-
-        for (const c of state.coins) {
-          if (!c.collected && Math.abs(p.x + 10 - c.x) < 18 && Math.abs(p.y + 15 - c.y) < 22) {
-            c.collected = true;
-            soundManager.playCoin();
-            state.coinCount += 1;
-            state.score += 100;
-            setCoins(state.coinCount);
-            setScore(state.score);
-          }
-        }
-
-        for (const e of state.enemies) {
-          if (!e.alive) continue;
-
-          if (e.type === "slime") {
-            e.x += e.vx;
-            for (const b of state.blocks) {
-              if (b.type !== "spike" && e.x < b.x + b.w && e.x + e.w > b.x && e.y < b.y + b.h && e.y + e.h > b.y) {
-                e.vx *= -1;
-              }
-            }
-          } else if (e.type === "bat") {
-            e.x += e.vx;
-            if (e.originY) e.y = e.originY + Math.sin(state.animFrame * 0.08) * 35;
-          } else if (e.type === "piranha") {
-            if (e.originY) {
-              e.animTimer = (e.animTimer || 0) + 0.04;
-              e.y = e.originY - Math.abs(Math.sin(e.animTimer)) * 32;
-            }
-          }
-
-          if (
-            p.x < e.x + e.w &&
-            p.x + p.w > e.x &&
-            p.y < e.y + e.h &&
-            p.y + p.h > e.y
-          ) {
-            if (p.vy > 0 && p.y + p.h - p.vy <= e.y + 8 && e.type !== "piranha") {
-              e.alive = false;
-              p.vy = -8.5;
-              soundManager.playStomp();
-              state.score += 300;
-              setScore(state.score);
-              for (let k = 0; k < 6; k++) {
-                state.particles.push({
-                  x: e.x + 12,
-                  y: e.y + 12,
-                  vx: (Math.random() - 0.5) * 4,
-                  vy: (Math.random() - 0.5) * 3,
-                  life: 20,
-                  color: "#22c55e",
-                  size: 3,
-                });
-              }
-            } else if (p.invulnerable <= 0) {
-              handlePlayerDamage();
-            }
-          }
-        }
-
-        if (p.invulnerable > 0) p.invulnerable--;
-
-        const fp = state.flagpole;
-        if (!fp.reached && p.x + p.w >= fp.x && p.x <= fp.x + 16 && p.y >= fp.y) {
-          fp.reached = true;
-          soundManager.playVictory();
-          try {
-            confetti({ particleCount: 80, spread: 80 });
-          } catch {}
-          setTimeout(() => setGameState("victory"), 3000);
+        // Animate mouth
+        pacman.mouthAngle += pacman.mouthSpeed;
+        if (pacman.mouthAngle > 0.45 || pacman.mouthAngle < 0.05) {
+          pacman.mouthSpeed = -pacman.mouthSpeed;
         }
       }
 
-      if (state.flagpole.reached && state.flagpole.flagY < 330) {
-        state.flagpole.flagY += 3;
+      // Tunnel Wrap-Around
+      if (pacman.x < -0.5) pacman.x = COLS - 0.5;
+      if (pacman.x > COLS - 0.5) pacman.x = -0.5;
+
+      // Eat Data Dots & Energizers
+      const curCol = Math.round(pacman.x);
+      const curRow = Math.round(pacman.y);
+
+      if (curRow >= 0 && curRow < ROWS && curCol >= 0 && curCol < COLS) {
+        const cell = grid[curRow][curCol];
+        if (cell === 2) {
+          // Small Dot
+          grid[curRow][curCol] = 0;
+          setScore((prev) => {
+            const nextScore = prev + 10;
+            if (nextScore > highScore) {
+              setHighScore(nextScore);
+              if (typeof window !== "undefined") localStorage.setItem("pacman_high_score", nextScore.toString());
+            }
+            return nextScore;
+          });
+          playChompSound();
+          setDotsLeft((prev) => {
+            const nextDots = prev - 1;
+            if (nextDots <= 0) {
+              // Victory Stage Clear!
+              setGameState("victory");
+              confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+              soundManager.playVictory();
+            }
+            return nextDots;
+          });
+        } else if (cell === 3) {
+          // Power Pellet (Energizer)
+          grid[curRow][curCol] = 0;
+          setScore((prev) => prev + 50);
+          playPowerSound();
+          engine.frightenedTime = 400; // ~7 seconds
+          engine.ghostsEatenCombo = 0;
+          ghosts.forEach((g) => {
+            if (g.mode !== "eaten") g.mode = "frightened";
+          });
+          setDotsLeft((prev) => prev - 1);
+        }
       }
 
-      if (state.player.deadAnim) {
-        state.player.deadTimer++;
-        state.player.y += state.player.vy;
-        state.player.vy += 0.5;
-        if (state.player.deadTimer > 70) {
-          if (state.lives > 0) {
-            state.player.x = Math.max(60, state.cameraX - 50);
-            state.player.y = 200;
-            state.player.vx = 0;
-            state.player.vy = 0;
-            state.player.deadAnim = false;
-            state.player.invulnerable = 90;
+      // Frightened Timer Update
+      if (engine.frightenedTime > 0) {
+        engine.frightenedTime--;
+        setFrightenedTimer(engine.frightenedTime);
+        if (engine.frightenedTime === 0) {
+          ghosts.forEach((g) => {
+            if (g.mode === "frightened") g.mode = "chase";
+          });
+        }
+      }
+
+      // --- 2. UPDATE GHOSTS ---
+      const possibleDirs: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
+      const oppositeDir: Record<Direction, Direction> = {
+        UP: "DOWN",
+        DOWN: "UP",
+        LEFT: "RIGHT",
+        RIGHT: "LEFT",
+        NONE: "NONE",
+      };
+
+      ghosts.forEach((g) => {
+        // Ghost House Exit Logic
+        if (g.house) {
+          g.y -= 0.03;
+          if (g.y <= 8.5) {
+            g.house = false;
+            g.y = 8;
+            g.dir = "LEFT";
+          }
+          return;
+        }
+
+        // Return home if eaten
+        if (g.mode === "eaten") {
+          const dx = g.spawnX - g.x;
+          const dy = g.spawnY - g.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 0.5) {
+            g.mode = "chase";
+            g.x = g.spawnX;
+            g.y = g.spawnY;
           } else {
-            setGameState("gameover");
+            g.x += (dx / dist) * 0.12;
+            g.y += (dy / dist) * 0.12;
+          }
+          return;
+        }
+
+        // Choose Direction at Intersection
+        const gAlignedX = Math.abs(g.x - Math.round(g.x)) < 0.12;
+        const gAlignedY = Math.abs(g.y - Math.round(g.y)) < 0.12;
+
+        if (gAlignedX && gAlignedY) {
+          g.x = Math.round(g.x);
+          g.y = Math.round(g.y);
+
+          const validDirs = possibleDirs.filter(
+            (d) => d !== oppositeDir[g.dir] && canMove(g.x, g.y, d, false)
+          );
+
+          if (validDirs.length > 0) {
+            if (g.mode === "frightened") {
+              // Random direction when frightened
+              g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+            } else {
+              // Intelligent Chase Target (Blinky chases pacman directly, others slightly wander)
+              let targetX = pacman.x;
+              let targetY = pacman.y;
+
+              if (g.id === "pinky") {
+                if (pacman.dir === "UP") targetY -= 3;
+                if (pacman.dir === "DOWN") targetY += 3;
+                if (pacman.dir === "LEFT") targetX -= 3;
+                if (pacman.dir === "RIGHT") targetX += 3;
+              } else if (g.id === "clyde") {
+                const dist = Math.hypot(g.x - pacman.x, g.y - pacman.y);
+                if (dist < 4) {
+                  targetX = 1;
+                  targetY = 19;
+                }
+              }
+
+              // Pick direction with shortest Euclidean distance
+              let bestDir = validDirs[0];
+              let minDist = Infinity;
+
+              validDirs.forEach((d) => {
+                let testX = g.x;
+                let testY = g.y;
+                if (d === "UP") testY -= 1;
+                if (d === "DOWN") testY += 1;
+                if (d === "LEFT") testX -= 1;
+                if (d === "RIGHT") testX += 1;
+
+                const dDist = Math.hypot(testX - targetX, testY - targetY);
+                if (dDist < minDist) {
+                  minDist = dDist;
+                  bestDir = d;
+                }
+              });
+
+              g.dir = bestDir;
+            }
+          } else if (canMove(g.x, g.y, oppositeDir[g.dir])) {
+            g.dir = oppositeDir[g.dir];
           }
         }
-      }
 
-      // Canvas Rendering
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-      const cam = state.cameraX;
+        // Move Ghost
+        const curSpeed = g.mode === "frightened" ? g.speed * 0.6 : g.speed;
+        if (g.dir === "UP") g.y -= curSpeed;
+        if (g.dir === "DOWN") g.y += curSpeed;
+        if (g.dir === "LEFT") g.x -= curSpeed;
+        if (g.dir === "RIGHT") g.x += curSpeed;
 
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, cvs.height);
-      skyGrad.addColorStop(0, "#0c4a6e");
-      skyGrad.addColorStop(0.5, "#0284c7");
-      skyGrad.addColorStop(1, "#38bdf8");
-      ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, cvs.width, cvs.height);
+        // Tunnel Wrap
+        if (g.x < -0.5) g.x = COLS - 0.5;
+        if (g.x > COLS - 0.5) g.x = -0.5;
 
-      ctx.fillStyle = "#0369a1";
-      ctx.beginPath();
-      ctx.moveTo(0 - (cam * 0.2) % 400, 380);
-      ctx.lineTo(150 - (cam * 0.2) % 400, 220);
-      ctx.lineTo(300 - (cam * 0.2) % 400, 380);
-      ctx.lineTo(450 - (cam * 0.2) % 400, 200);
-      ctx.lineTo(600 - (cam * 0.2) % 400, 380);
-      ctx.lineTo(750 - (cam * 0.2) % 400, 240);
-      ctx.lineTo(900 - (cam * 0.2) % 400, 380);
-      ctx.fill();
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-      [100, 450, 800, 1300, 1800, 2300, 2800].forEach((cx, idx) => {
-        const cloudX = cx - cam * 0.4;
-        if (cloudX > -100 && cloudX < cvs.width + 100) {
-          ctx.fillRect(cloudX, 60 + (idx % 3) * 25, 60, 20);
-          ctx.fillRect(cloudX + 15, 45 + (idx % 3) * 25, 30, 15);
+        // --- 3. PAC-MAN & GHOST COLLISION ---
+        const distToPacman = Math.hypot(g.x - pacman.x, g.y - pacman.y);
+        if (distToPacman < 0.65) {
+          if (g.mode === "frightened") {
+            // Eat Ghost!
+            g.mode = "eaten";
+            engine.ghostsEatenCombo++;
+            const bonus = 200 * Math.pow(2, engine.ghostsEatenCombo - 1);
+            setScore((prev) => prev + bonus);
+            playEatGhostSound();
+          } else if (g.mode === "chase") {
+            // Pac-Man Hit by Ghost!
+            playDeathSound();
+            setLives((prev) => {
+              const nextLives = prev - 1;
+              if (nextLives <= 0) {
+                setGameState("gameover");
+                soundManager.playGameOver();
+              } else {
+                // Respawn Pacman and Ghosts
+                pacman.x = 9;
+                pacman.y = 16;
+                pacman.dir = "NONE";
+                pacman.nextDir = "NONE";
+                ghosts.forEach((gh) => {
+                  gh.x = gh.spawnX;
+                  gh.y = gh.spawnY;
+                  gh.mode = "chase";
+                  gh.house = gh.id !== "blinky";
+                  gh.dir = gh.id === "blinky" ? "LEFT" : "UP";
+                });
+              }
+              return nextLives;
+            });
+          }
         }
       });
 
-      for (const b of state.blocks) {
-        const bx = b.x - cam;
-        const by = b.y - (b.bouncing || 0);
+      // --- 4. RENDER CANVAS (8-BIT RETRO PAC-MAN) ---
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        if (bx + b.w < 0 || bx > cvs.width) continue;
+      const cellW = canvas.width / COLS;
+      const cellH = canvas.height / ROWS;
 
-        if (b.type === "ground") {
-          ctx.fillStyle = "#22c55e";
-          ctx.fillRect(bx, by, b.w, 10);
-          ctx.fillStyle = "#15803d";
-          ctx.fillRect(bx, by + 10, b.w, 4);
-          ctx.fillStyle = "#854d0e";
-          ctx.fillRect(bx, by + 14, b.w, b.h - 14);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(bx, by, b.w, b.h);
-        } else if (b.type === "brick") {
-          ctx.fillStyle = "#b45309";
-          ctx.fillRect(bx, by, b.w, b.h);
-          ctx.fillStyle = "#d97706";
-          ctx.fillRect(bx + 2, by + 2, b.w - 4, b.h - 4);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(bx, by, b.w, b.h);
-        } else if (b.type === "qblock") {
-          ctx.fillStyle = b.hit ? "#78350f" : "#eab308";
-          ctx.fillRect(bx, by, b.w, b.h);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(bx, by, b.w, b.h);
-          ctx.fillStyle = b.hit ? "#94a3b8" : "#ffffff";
-          ctx.font = "bold 14px 'Press Start 2P', monospace";
-          ctx.textAlign = "center";
-          ctx.fillText(b.hit ? "•" : "?", bx + 16, by + 22);
-        } else if (b.type === "pipe") {
-          ctx.fillStyle = "#16a34a";
-          ctx.fillRect(bx, by, b.w, b.h);
-          ctx.fillStyle = "#4ade80";
-          ctx.fillRect(bx + 4, by, 8, b.h);
-          ctx.fillStyle = "#15803d";
-          ctx.fillRect(bx + b.w - 8, by, 8, b.h);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(bx, by, b.w, b.h);
-          ctx.strokeRect(bx - 2, by, b.w + 4, 16);
-        } else if (b.type === "spike") {
-          ctx.fillStyle = "#cbd5e1";
-          for (let s = 0; s < b.w; s += 12) {
+      // Draw Maze Walls & Pellets
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cell = grid[r][c];
+          const px = c * cellW;
+          const py = r * cellH;
+
+          if (cell === 1) {
+            // Blue Neon 8-Bit Wall
+            ctx.fillStyle = "#1e3a8a";
+            ctx.fillRect(px, py, cellW, cellH);
+            ctx.strokeStyle = "#3b82f6";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(px + 2, py + 2, cellW - 4, cellH - 4);
+          } else if (cell === 4) {
+            // Ghost Gate
+            ctx.fillStyle = "#f472b6";
+            ctx.fillRect(px, py + cellH / 2 - 2, cellW, 4);
+          } else if (cell === 2) {
+            // Small Data Dot
+            ctx.fillStyle = "#fef08a";
             ctx.beginPath();
-            ctx.moveTo(bx + s, by + b.h);
-            ctx.lineTo(bx + s + 6, by);
-            ctx.lineTo(bx + s + 12, by + b.h);
-            ctx.closePath();
+            ctx.arc(px + cellW / 2, py + cellH / 2, cellW * 0.14, 0, Math.PI * 2);
             ctx.fill();
-            ctx.stroke();
+          } else if (cell === 3) {
+            // Power Pellet (Pulsing Big Dot)
+            const pulse = (Math.sin(Date.now() / 150) + 1) / 2;
+            ctx.fillStyle = pulse > 0.3 ? "#fde047" : "#fbbf24";
+            ctx.beginPath();
+            ctx.arc(px + cellW / 2, py + cellH / 2, cellW * 0.35, 0, Math.PI * 2);
+            ctx.fill();
           }
-        } else if (b.type === "moving") {
-          ctx.fillStyle = "#0284c7";
-          ctx.fillRect(bx, by, b.w, b.h);
-          ctx.fillStyle = "#38bdf8";
-          ctx.fillRect(bx + 2, by + 2, b.w - 4, 4);
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(bx, by, b.w, b.h);
         }
       }
 
-      for (const c of state.coins) {
-        if (c.collected) continue;
-        const cx = c.x - cam;
-        if (cx > -20 && cx < cvs.width + 20) {
-          ctx.fillStyle = "#facc15";
-          ctx.beginPath();
-          ctx.arc(cx + 8, c.y + 8, 8, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = "#ca8a04";
-          ctx.beginPath();
-          ctx.arc(cx + 8, c.y + 8, 5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      // Draw Pac-Man
+      const pacPx = (pacman.x + 0.5) * cellW;
+      const pacPy = (pacman.y + 0.5) * cellH;
+      const pacRadius = cellW * 0.48;
 
-      const fp = state.flagpole;
-      const fpx = fp.x - cam;
-      if (fpx > -50 && fpx < cvs.width + 50) {
-        ctx.fillStyle = "#94a3b8";
-        ctx.fillRect(fpx + 6, fp.y, 4, fp.h);
-        ctx.fillStyle = "#facc15";
-        ctx.beginPath();
-        ctx.arc(fpx + 8, fp.y, 8, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#ef4444";
-        ctx.beginPath();
-        ctx.moveTo(fpx + 8, fp.flagY);
-        ctx.lineTo(fpx - 28, fp.flagY + 14);
-        ctx.lineTo(fpx + 8, fp.flagY + 28);
-        ctx.closePath();
-        ctx.fill();
-      }
+      let rotation = 0;
+      if (pacman.dir === "RIGHT") rotation = 0;
+      if (pacman.dir === "DOWN") rotation = Math.PI / 2;
+      if (pacman.dir === "LEFT") rotation = Math.PI;
+      if (pacman.dir === "UP") rotation = (Math.PI * 3) / 2;
 
-      const cas = state.castle;
-      const casX = cas.x - cam;
-      if (casX > -150 && casX < cvs.width + 150) {
-        ctx.fillStyle = "#64748b";
-        ctx.fillRect(casX, cas.y, cas.w, cas.h);
-        ctx.fillStyle = "#475569";
-        ctx.fillRect(casX + 40, cas.y + 70, 40, 70);
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(casX, cas.y, cas.w, cas.h);
-      }
+      ctx.save();
+      ctx.translate(pacPx, pacPy);
+      ctx.rotate(rotation);
 
-      for (const e of state.enemies) {
-        if (!e.alive) continue;
-        const ex = e.x - cam;
-        if (ex < -40 || ex > cvs.width + 40) continue;
+      ctx.fillStyle = "#facc15";
+      ctx.beginPath();
+      ctx.arc(
+        0,
+        0,
+        pacRadius,
+        pacman.mouthAngle * Math.PI,
+        (2 - pacman.mouthAngle) * Math.PI
+      );
+      ctx.lineTo(0, 0);
+      ctx.fill();
 
-        if (e.type === "slime") {
-          ctx.fillStyle = "#22c55e";
-          ctx.fillRect(ex, e.y, e.w, e.h);
-          ctx.fillStyle = "#15803d";
-          ctx.fillRect(ex, e.y + e.h - 4, e.w, 4);
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(ex + 4, e.y + 6, 4, 4);
-          ctx.fillRect(ex + e.w - 8, e.y + 6, 4, 4);
-          ctx.fillStyle = "#000000";
-          ctx.fillRect(ex + 6, e.y + 6, 2, 4);
-          ctx.fillRect(ex + e.w - 6, e.y + 6, 2, 4);
-        } else if (e.type === "piranha") {
-          ctx.fillStyle = "#ef4444";
-          ctx.fillRect(ex, e.y, e.w, e.h);
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(ex + 4, e.y + 6, 4, 4);
-          ctx.fillRect(ex + e.w - 8, e.y + 6, 4, 4);
-        } else if (e.type === "bat") {
-          ctx.fillStyle = "#6366f1";
-          ctx.fillRect(ex, e.y, e.w, e.h);
-          ctx.fillStyle = "#ef4444";
-          ctx.fillRect(ex + 6, e.y + 8, 3, 3);
-          ctx.fillRect(ex + e.w - 9, e.y + 8, 3, 3);
-        }
-      }
+      // Pacman Eye
+      ctx.fillStyle = "#000000";
+      ctx.beginPath();
+      ctx.arc(0, -pacRadius * 0.45, pacRadius * 0.15, 0, Math.PI * 2);
+      ctx.fill();
 
-      const p = state.player;
-      const px = p.x - cam;
-      const isBlinking = p.invulnerable > 0 && Math.floor(state.animFrame / 4) % 2 === 0;
+      ctx.restore();
 
-      if (!isBlinking) {
+      // Draw Ghosts
+      ghosts.forEach((g) => {
+        const ghPx = (g.x + 0.5) * cellW;
+        const ghPy = (g.y + 0.5) * cellH;
+        const ghRadius = cellW * 0.46;
+
         ctx.save();
-        ctx.fillStyle = "#a16207";
-        ctx.fillRect(px + 4, p.y + 2, 14, 6);
-        ctx.fillStyle = "#fed7aa";
-        ctx.fillRect(px + 4, p.y + 8, 14, 8);
-        ctx.fillStyle = "#000000";
-        if (p.facing === "right") {
-          ctx.fillRect(px + 12, p.y + 10, 3, 3);
+        ctx.translate(ghPx, ghPy);
+
+        if (g.mode === "eaten") {
+          // Just eyes
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
+          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#2563eb";
+          ctx.beginPath();
+          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.14, 0, Math.PI * 2);
+          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.14, 0, Math.PI * 2);
+          ctx.fill();
         } else {
-          ctx.fillRect(px + 6, p.y + 10, 3, 3);
+          // Ghost Body
+          let ghostBodyColor = g.color;
+          if (g.mode === "frightened") {
+            const isFlashing = engine.frightenedTime < 80 && Math.floor(engine.frightenedTime / 10) % 2 === 0;
+            ghostBodyColor = isFlashing ? "#ffffff" : "#1d4ed8";
+          }
+
+          ctx.fillStyle = ghostBodyColor;
+          ctx.beginPath();
+          ctx.arc(0, -ghRadius * 0.1, ghRadius, Math.PI, 0, false);
+          ctx.lineTo(ghRadius, ghRadius * 0.8);
+
+          // Wavy Skirt
+          const waves = 3;
+          const waveW = (ghRadius * 2) / waves;
+          for (let i = 0; i < waves; i++) {
+            const wx = ghRadius - i * waveW;
+            ctx.lineTo(wx - waveW / 2, ghRadius * 0.5);
+            ctx.lineTo(wx - waveW, ghRadius * 0.8);
+          }
+          ctx.closePath();
+          ctx.fill();
+
+          // Ghost Eyes
+          ctx.fillStyle = g.mode === "frightened" ? "#fecdd3" : "#ffffff";
+          ctx.beginPath();
+          ctx.arc(-ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
+          ctx.arc(ghRadius * 0.35, -ghRadius * 0.2, ghRadius * 0.28, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Pupil looking in direction
+          let pupilDx = 0;
+          let pupilDy = 0;
+          if (g.dir === "LEFT") pupilDx = -ghRadius * 0.12;
+          if (g.dir === "RIGHT") pupilDx = ghRadius * 0.12;
+          if (g.dir === "UP") pupilDy = -ghRadius * 0.12;
+          if (g.dir === "DOWN") pupilDy = ghRadius * 0.12;
+
+          ctx.fillStyle = g.mode === "frightened" ? "#ef4444" : "#1e3a8a";
+          ctx.beginPath();
+          ctx.arc(-ghRadius * 0.35 + pupilDx, -ghRadius * 0.2 + pupilDy, ghRadius * 0.14, 0, Math.PI * 2);
+          ctx.arc(ghRadius * 0.35 + pupilDx, -ghRadius * 0.2 + pupilDy, ghRadius * 0.14, 0, Math.PI * 2);
+          ctx.fill();
         }
-        ctx.fillStyle = "#16a34a";
-        ctx.fillRect(px + 4, p.y + 16, 14, 10);
-        ctx.fillStyle = "#0284c7";
-        if (p.facing === "right") {
-          ctx.fillRect(px, p.y + 16, 4, 8);
-        } else {
-          ctx.fillRect(px + 18, p.y + 16, 4, 8);
-        }
-        ctx.fillStyle = "#78350f";
-        ctx.fillRect(px + 4, p.y + 26, 5, 4);
-        ctx.fillRect(px + 13, p.y + 26, 5, 4);
+
         ctx.restore();
-      }
+      });
 
-      for (let i = state.particles.length - 1; i >= 0; i--) {
-        const pt = state.particles[i];
-        pt.x += pt.vx;
-        pt.y += pt.vy;
-        pt.life--;
-        ctx.fillStyle = pt.color;
-        ctx.fillRect(pt.x - cam, pt.y, pt.size, pt.size);
-        if (pt.life <= 0) state.particles.splice(i, 1);
-      }
-
-      animId = requestAnimationFrame(gameLoop);
+      animationFrameId = requestAnimationFrame(gameLoop);
     };
 
-    animId = requestAnimationFrame(gameLoop);
-    return () => cancelAnimationFrame(animId);
-  }, [gameState]);
-
-  const handlePlayerDamage = () => {
-    const state = engineState.current;
-    state.lives -= 1;
-    setLives(state.lives);
-
-    if (state.lives <= 0 || difficulty === "kaizo") {
-      handlePlayerDeath();
-    } else {
-      soundManager.playBeep(220, 0.15);
-      state.player.invulnerable = 90;
-      state.player.vy = -6;
-    }
-  };
-
-  const handlePlayerDeath = () => {
-    const state = engineState.current;
-    if (state.player.deadAnim) return;
-
-    soundManager.playDeath();
-    state.deaths += 1;
-    setDeaths(state.deaths);
-    state.player.deadAnim = true;
-    state.player.deadTimer = 0;
-    state.player.vy = -11;
-  };
+    animationFrameId = requestAnimationFrame(gameLoop);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [gameState, highScore]);
 
   return (
-    <div className="py-4 sm:py-6 px-2 sm:px-4 md:px-6 max-w-7xl mx-auto w-full space-y-4 sm:space-y-6">
-      {/* 8-Bit Window Container */}
-      <div className="bg-[#0f172a] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000000] sm:shadow-[8px_8px_0px_#000000]">
+    <div className="py-3 sm:py-6 px-2 sm:px-4 md:px-6 max-w-5xl mx-auto w-full space-y-4">
+      {/* 8-Bit Window Header */}
+      <div className="bg-[#0f172a] border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[8px_8px_0px_#000]">
         {/* Title Bar */}
         <div className="bg-[#9333ea] px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between border-b-2 sm:border-b-4 border-black select-none gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-300 border border-black inline-block flex-shrink-0" />
+            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0 animate-spin" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              ARCADE_STAGE: SUPER_ANDHIKA_BROS_KAIZO.EXE
+              BONUS STAGE: DATA_PACMAN_ARCADE_8BIT.EXE
             </h1>
           </div>
-          <div className="flex items-center gap-1 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
-            <span className="w-4 h-4 sm:w-5 sm:h-5 bg-[#7e22ce] text-white flex items-center justify-center border border-black">
-              _
-            </span>
-            <span className="w-4 h-4 sm:w-5 sm:h-5 bg-[#7e22ce] text-white flex items-center justify-center border border-black">
-              □
-            </span>
+          <div className="flex items-center gap-1.5 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
+            <button
+              onClick={() => setAudioMuted(!audioMuted)}
+              title={audioMuted ? "Unmute SFX" : "Mute SFX"}
+              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#7e22ce] hover:bg-[#a855f7] text-white flex items-center justify-center border border-black cursor-pointer"
+            >
+              {audioMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+            </button>
             <Link
               href="/"
               onClick={() => soundManager.playWindowClose()}
-              className="w-4 h-4 sm:w-5 sm:h-5 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border border-black cursor-pointer"
+              className="w-5 h-5 sm:w-6 sm:h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border border-black cursor-pointer"
             >
               ✕
             </Link>
@@ -804,213 +796,182 @@ export default function MinigamePage() {
         </div>
 
         {/* Content Body */}
-        <div className="p-2.5 sm:p-5 md:p-6 bg-[#0a1622] space-y-3 sm:space-y-4 text-slate-100">
-          {/* Top Mario Style Status HUD */}
-          <div className="bg-[#111f30] p-2 sm:p-3 border-2 sm:border-4 border-black grid grid-cols-3 sm:grid-cols-6 gap-1 sm:gap-2 font-pixel text-[7px] sm:text-[8px] md:text-[9px] text-center">
-            <div className="text-yellow-400">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">PLAYER</span>
-              <span className="truncate block">ANDHIKA</span>
+        <div className="p-2 sm:p-4 md:p-6 bg-[#0a1622] space-y-3 sm:space-y-4 text-slate-100 flex flex-col items-center">
+          {/* Top HUD Status Bar */}
+          <div className="w-full grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px] md:text-[9px]">
+            <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
+              <span className="text-slate-400 block truncate">1UP SCORE</span>
+              <span className="text-yellow-400 font-bold block truncate">{score}</span>
             </div>
-            <div className="text-white">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">SCORE</span>
-              <span>{score.toString().padStart(6, "0")}</span>
+            <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
+              <span className="text-slate-400 block truncate">HIGH SCORE</span>
+              <span className="text-cyan-400 font-bold block truncate">{highScore}</span>
             </div>
-            <div className="text-yellow-300">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">COINS</span>
-              <span>🪙 x {coins.toString().padStart(2, "0")}</span>
+            <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
+              <span className="text-slate-400 block truncate">LIVES</span>
+              <div className="flex items-center justify-center gap-1 text-red-500 mt-0.5">
+                {Array.from({ length: Math.max(0, lives) }).map((_, i) => (
+                  <Heart key={i} className="w-3 h-3 fill-red-500 inline-block" />
+                ))}
+              </div>
             </div>
-            <div className="text-cyan-300">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">WORLD</span>
-              <span>1-1 HARD</span>
+            <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-1 sm:col-span-1">
+              <span className="text-slate-400 block truncate">DATA DOTS</span>
+              <span className="text-green-400 font-bold block truncate">{dotsLeft}</span>
             </div>
-            <div className="text-red-400">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">LIVES</span>
-              <span>{"❤️".repeat(Math.max(0, lives))}</span>
-            </div>
-            <div className="text-amber-400">
-              <span className="block text-slate-400 text-[6px] sm:text-[8px]">DEATHS</span>
-              <span>💀 {deaths}</span>
+            <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-2 sm:col-span-1">
+              <span className="text-slate-400 block truncate">ENERGIZER</span>
+              <span className={`font-bold block truncate ${frightenedTimer > 0 ? "text-cyan-300 animate-pulse" : "text-slate-500"}`}>
+                {frightenedTimer > 0 ? `ACTIVE (${Math.ceil(frightenedTimer / 60)}s)` : "READY"}
+              </span>
             </div>
           </div>
 
-          {/* Difficulty & Mode Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px]">
-            <div className="flex items-center gap-1.5">
-              <span className="text-slate-400 hidden xs:inline">MODE:</span>
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  setDifficulty("standard");
-                  startNewGame("standard");
-                }}
-                className={`px-2 py-1 border border-black sm:border-2 cursor-pointer ${
-                  difficulty === "standard"
-                    ? "bg-[#0284c7] text-white font-bold shadow-[2px_2px_0px_#000]"
-                    : "bg-[#1e293b] text-slate-400 hover:bg-[#334155]"
-                }`}
-              >
-                STANDARD (3 ❤️)
-              </button>
-              <button
-                onClick={() => {
-                  soundManager.playClick();
-                  setDifficulty("kaizo");
-                  startNewGame("kaizo");
-                }}
-                className={`px-2 py-1 border border-black sm:border-2 flex items-center gap-1 cursor-pointer ${
-                  difficulty === "kaizo"
-                    ? "bg-[#b91c1c] text-white font-bold shadow-[2px_2px_0px_#000]"
-                    : "bg-[#1e293b] text-slate-400 hover:bg-[#334155]"
-                }`}
-              >
-                <Flame className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                <span>KAIZO (1-HIT)</span>
-              </button>
-            </div>
-
-            <span className="text-cyan-300 font-vt323 text-sm sm:text-base hidden md:inline">
-              KONTROL: [A][D] Gerak | [W/Spasi] Lompat | [Shift] Sprint
-            </span>
-          </div>
-
-          {/* 2D Canvas Viewport */}
-          <div className="relative border-2 sm:border-4 border-black shadow-[4px_4px_0px_#000] sm:shadow-[6px_6px_0px_#000] overflow-hidden bg-black aspect-[16/9] max-h-[420px] w-full">
+          {/* Arcade Cabinet Screen Area */}
+          <div
+            className="relative bg-black border-4 border-[#1e3a8a] shadow-[0_0_15px_rgba(59,130,246,0.5)] p-1 sm:p-2 rounded-sm max-w-full overflow-hidden touch-none select-none"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             <canvas
               ref={canvasRef}
-              width={800}
-              height={450}
-              className="w-full h-full block"
-              style={{ imageRendering: "pixelated" }}
+              width={380}
+              height={420}
+              className="w-full max-w-[380px] h-auto aspect-[19/21] block mx-auto bg-black"
             />
 
-            {/* Start Screen Overlay */}
+            {/* Start / Idle Screen Overlay */}
             {gameState === "idle" && (
-              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-4">
-                <h2 className="font-pixel text-base sm:text-2xl md:text-3xl text-yellow-400 drop-shadow-[2px_2px_0px_#000]">
-                  SUPER ANDHIKA BROS
-                </h2>
-                <p className="font-pixel text-[8px] sm:text-xs text-red-400">
-                  {difficulty === "kaizo" ? "🔥 KAIZO NIGHTMARE EDITION 🔥" : "⚡ HARDCORE PLATFORMER ⚡"}
+              <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
+                <span className="font-pixel text-yellow-400 text-sm sm:text-lg md:text-xl tracking-wider text-shadow-pixel">
+                  DATA PAC-MAN 8-BIT
+                </span>
+                <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
+                  Kumpulkan seluruh Data Pellets dan makan Power Energizer untuk mengalahkan Bug & Error!
                 </p>
-                <p className="font-vt323 text-base sm:text-xl text-slate-200 max-w-lg leading-snug">
-                  Taklukkan jurang maut, tanaman pemangsa di pipa, duri jebakan, dan kelelawar untuk mencapai tiang bendera!
-                </p>
-                <button
-                  onClick={() => startNewGame()}
-                  className="px-5 sm:px-8 py-2.5 sm:py-3 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[9px] sm:text-xs md:text-sm border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span>START ADVENTURE (1-1)</span>
-                </button>
-              </div>
-            )}
 
-            {/* Game Over Screen Overlay */}
-            {gameState === "gameover" && (
-              <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-3">
-                <h2 className="font-pixel text-xl sm:text-3xl text-red-500">
-                  GAME OVER!
-                </h2>
-                <p className="font-pixel text-[8px] sm:text-xs text-yellow-400">
-                  TOTAL DEATHS: {deaths} 💀 | FINAL SCORE: {score}
-                </p>
-                <p className="font-vt323 text-base sm:text-lg text-slate-300">
-                  Setiap kegagalan adalah insight untuk lompatan berikutnya.
-                </p>
-                <button
-                  onClick={() => startNewGame()}
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#eab308] hover:bg-[#ca8a04] text-black font-pixel text-[8px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>RETRY STAGE 1-1</span>
-                </button>
-              </div>
-            )}
-
-            {/* Victory Screen Overlay */}
-            {gameState === "victory" && (
-              <div className="absolute inset-0 bg-[#064e3b]/90 backdrop-blur-sm flex flex-col items-center justify-center p-3 text-center space-y-2 sm:space-y-4 animate-in fade-in">
-                <h2 className="font-pixel text-xl sm:text-3xl text-yellow-300">
-                  STAGE CLEAR! 🏆
-                </h2>
-                <p className="font-pixel text-[8px] sm:text-xs text-green-300">
-                  SELAMAT! ANDA BERHASIL MENAKLUKKAN STAGE SULIT KAIZO!
-                </p>
-                <div className="bg-[#0f172a] p-2 sm:p-3 border-2 border-black font-pixel text-[8px] sm:text-xs space-y-1 text-white">
-                  <div>SKOR AKHIR: {score + 5000}</div>
-                  <div className="text-yellow-400">KOIN TERKUMPUL: {coins}</div>
-                  <div className="text-red-400">TOTAL DEATHS: {deaths}</div>
+                {/* Ghost Bug Lineup */}
+                <div className="flex items-center gap-3 py-1 font-pixel text-[7px] text-slate-300">
+                  <div className="flex flex-col items-center">
+                    <span className="w-3.5 h-3.5 bg-red-500 rounded-t-full inline-block mb-0.5" />
+                    <span>BLINKY</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="w-3.5 h-3.5 bg-pink-500 rounded-t-full inline-block mb-0.5" />
+                    <span>PINKY</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="w-3.5 h-3.5 bg-cyan-400 rounded-t-full inline-block mb-0.5" />
+                    <span>INKY</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="w-3.5 h-3.5 bg-orange-500 rounded-t-full inline-block mb-0.5" />
+                    <span>CLYDE</span>
+                  </div>
                 </div>
+
                 <button
-                  onClick={() => startNewGame()}
-                  className="px-4 sm:px-6 py-2 sm:py-2.5 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[8px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] active:translate-y-1 font-bold cursor-pointer"
+                  onClick={startGame}
+                  className="px-5 py-2.5 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
                 >
-                  MAIN ULANG / TINGKATKAN SKOR
+                  <Play className="w-3.5 h-3.5 fill-black" />
+                  <span>START GAME [SPACE]</span>
+                </button>
+              </div>
+            )}
+
+            {/* Game Over Overlay */}
+            {gameState === "gameover" && (
+              <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
+                <span className="font-pixel text-red-500 text-lg sm:text-2xl tracking-wider">
+                  GAME OVER
+                </span>
+                <p className="font-pixel text-[8px] sm:text-[9px] text-slate-300">
+                  FINAL SCORE: <span className="text-yellow-400">{score}</span>
+                </p>
+                <button
+                  onClick={startGame}
+                  className="px-4 py-2 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>MAIN LAGI [TRY AGAIN]</span>
+                </button>
+              </div>
+            )}
+
+            {/* Victory / Stage Clear Overlay */}
+            {gameState === "victory" && (
+              <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
+                <span className="font-pixel text-green-400 text-lg sm:text-2xl tracking-wider">
+                  STAGE CLEAR! 🎉
+                </span>
+                <p className="font-vt323 text-lg text-slate-200">
+                  Selamat! Seluruh Data Pellets telah berhasil di-cleansing!
+                </p>
+                <p className="font-pixel text-[8px] sm:text-[9px] text-yellow-300">
+                  TOTAL SKOR: {score}
+                </p>
+                <button
+                  onClick={startGame}
+                  className="px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  <span>MAINKAN LEVEL BERIKUTNYA</span>
                 </button>
               </div>
             )}
           </div>
 
-          {/* Virtual Gamepad for Mobile */}
-          <div className="bg-[#111f30] p-2 sm:p-3 border-2 sm:border-4 border-black flex items-center justify-between gap-2 sm:gap-4">
-            {/* Left D-Pad */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Virtual Mobile D-Pad Controls */}
+          <div className="w-full max-w-sm flex flex-col items-center pt-2 pb-1 space-y-2">
+            <span className="font-pixel text-[7px] sm:text-[8px] text-slate-400 block text-center">
+              KONTROL D-PAD (TOUCH / ARROW KEYS / WASD / SWIPE)
+            </span>
+
+            <div className="grid grid-cols-3 gap-1.5 w-44">
+              <div />
               <button
-                onTouchStart={() => (keys.current.left = true)}
-                onTouchEnd={() => (keys.current.left = false)}
-                onMouseDown={() => (keys.current.left = true)}
-                onMouseUp={() => (keys.current.left = false)}
-                className="w-12 h-10 sm:w-16 sm:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-base sm:text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
+                onClick={() => setNextDirection("UP")}
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+              >
+                ▲
+              </button>
+              <div />
+
+              <button
+                onClick={() => setNextDirection("LEFT")}
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ◀
               </button>
               <button
-                onTouchStart={() => (keys.current.right = true)}
-                onTouchEnd={() => (keys.current.right = false)}
-                onMouseDown={() => (keys.current.right = true)}
-                onMouseUp={() => (keys.current.right = false)}
-                className="w-12 h-10 sm:w-16 sm:h-14 bg-[#1e3a5f] active:bg-[#2563eb] text-white font-pixel text-base sm:text-lg border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer"
+                onClick={() => setNextDirection("DOWN")}
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
+              >
+                ▼
+              </button>
+              <button
+                onClick={() => setNextDirection("RIGHT")}
+                className="h-11 bg-[#1e293b] hover:bg-[#334155] active:bg-yellow-400 active:text-black text-white font-pixel text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer rounded-sm"
               >
                 ▶
               </button>
             </div>
+          </div>
 
-            {/* Quick Tips */}
-            <div className="hidden md:block text-center font-vt323 text-sm text-slate-400">
-              💡 Tip: Tahan tombol lompat untuk loncat lebih tinggi. Tahan tombol Run untuk lari kencang!
-            </div>
-
-            {/* Action Buttons (A: Jump, B: Run) */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onTouchStart={() => (keys.current.run = true)}
-                onTouchEnd={() => (keys.current.run = false)}
-                onMouseDown={() => (keys.current.run = true)}
-                onMouseUp={() => (keys.current.run = false)}
-                className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[#d97706] active:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
-              >
-                RUN
-              </button>
-              <button
-                onTouchStart={() => {
-                  keys.current.jump = true;
-                  soundManager.playJump();
-                }}
-                onTouchEnd={() => (keys.current.jump = false)}
-                onMouseDown={() => {
-                  keys.current.jump = true;
-                  soundManager.playJump();
-                }}
-                onMouseUp={() => (keys.current.jump = false)}
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#16a34a] active:bg-[#22c55e] text-white font-pixel text-[9px] sm:text-xs border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center select-none cursor-pointer font-bold"
-              >
-                JUMP
-              </button>
-            </div>
+          {/* Game Rules & Lore Box */}
+          <div className="w-full bg-[#111f30] p-3 sm:p-4 border-2 border-black text-[7px] sm:text-[8px] font-pixel text-slate-300 space-y-1.5 text-justify sm:text-left">
+            <h4 className="text-yellow-400 font-bold mb-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
+              <span>PANDUAN RETRO DATA PAC-MAN ARCADE:</span>
+            </h4>
+            <p>• <strong className="text-yellow-300">Data Dot (Kuning Kecil):</strong> +10 Poin per koin analitik.</p>
+            <p>• <strong className="text-cyan-300">Power Energizer (Besar Berkedip):</strong> +50 Poin & mengubah Ghost menjadi Scared Blue. Makan Ghost untuk bonus +200, +400, +800 poin!</p>
+            <p>• <strong className="text-red-400">Tunnel Warp:</strong> Lewati lorong kiri/kanan untuk teleportasi instan menghindari kejaran ghost.</p>
           </div>
 
           {/* Bottom Actions */}
-          <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 border-t-2 border-slate-700">
+          <div className="w-full pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-t-2 border-slate-700">
             <Link
               href="/certificates"
               onClick={() => soundManager.playClick()}
@@ -1024,7 +985,7 @@ export default function MinigamePage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 bg-[#0d9488] hover:bg-[#0f766e] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
             >
-              <span>LANJUT KE KONTAK</span>
+              <span>LANJUT KE KOTAK SURAT</span>
               <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </Link>
           </div>
