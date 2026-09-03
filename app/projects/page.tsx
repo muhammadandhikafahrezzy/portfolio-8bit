@@ -6,9 +6,13 @@ import { Project, PORTFOLIO_DATA } from "@/data/portfolioData";
 import { soundManager } from "@/components/SoundManager";
 import { PixelDatabase, PixelChart, PixelComputer, PixelGamepad } from "@/components/PixelIcons";
 import { ProjectModal } from "@/components/ProjectModal";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import { ArrowRight, Sparkles, CheckCircle2, ExternalLink } from "lucide-react";
 
 export default function ProjectsPage() {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [activeProject, setActiveProject] = useState<Project | null>(null);
 
@@ -48,7 +52,7 @@ export default function ProjectsPage() {
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-300 border border-black inline-block flex-shrink-0" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              STAGE 02: DATA_QUEST_LOG_AND_CASE_STUDIES.EXE
+              {t.projects.windowTitle}
             </h1>
           </div>
           <div className="flex items-center gap-1 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
@@ -75,11 +79,11 @@ export default function ProjectsPage() {
             <div className="flex items-center gap-1.5 sm:gap-2">
               <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />
               <h2 className="font-pixel text-[9px] sm:text-xs md:text-sm text-yellow-400">
-                KATALOG STUDI KASUS DATA & PROYEK
+                {t.projects.headerTitle}
               </h2>
             </div>
             <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed">
-              Setiap quest merepresentasikan studi kasus pemecahan masalah bisnis di dunia nyata menggunakan pemodelan data warehouse SQL, analisis analitik Python, dan visualisasi dashboard interaktif Tableau serta Looker Studio.
+              {t.projects.headerSubtitle}
             </p>
           </div>
 
@@ -98,7 +102,7 @@ export default function ProjectsPage() {
                     : "bg-[#1e3a5f] text-slate-200 hover:bg-[#2563eb]"
                 }`}
               >
-                {cat === "ALL" ? "SEMUA QUEST" : cat.toUpperCase()}
+                {cat === "ALL" ? (language === "id" ? "SEMUA QUEST" : "ALL QUESTS") : cat.toUpperCase()}
               </button>
             ))}
           </div>
@@ -123,23 +127,23 @@ export default function ProjectsPage() {
                   </div>
 
                   <h3 className="font-pixel text-[11px] sm:text-xs md:text-sm text-yellow-400 group-hover:text-yellow-300 leading-snug">
-                    {project.title}
+                    {language === "en" ? (project.title_en || project.title) : project.title}
                   </h3>
 
                   <p className="font-vt323 text-base sm:text-lg text-cyan-300 leading-tight">
-                    {project.subtitle}
+                    {language === "en" ? (project.subtitle_en || project.subtitle) : project.subtitle}
                   </p>
 
                   <p className="font-vt323 text-base sm:text-lg text-slate-300 leading-relaxed border-t border-slate-700 pt-2 line-clamp-3 text-justify sm:text-left">
-                    {project.description}
+                    {language === "en" ? (project.description_en || project.description) : project.description}
                   </p>
 
                   {/* Highlights */}
                   <div className="space-y-1">
                     <span className="font-pixel text-[7px] sm:text-[8px] text-green-400 block">
-                      KEY DELIVERABLES:
+                      {t.projects.deliverablesLabel}
                     </span>
-                    {project.highlights.slice(0, 2).map((hl, hIdx) => (
+                    {(language === "en" && project.highlights_en ? project.highlights_en : project.highlights).slice(0, 2).map((hl, hIdx) => (
                       <div
                         key={hIdx}
                         className="flex items-center gap-1.5 font-pixel text-[7px] sm:text-[8px] text-slate-300 bg-[#162a42] p-1.5 border border-black"
@@ -152,12 +156,12 @@ export default function ProjectsPage() {
 
                   {/* Tools Pills */}
                   <div className="flex flex-wrap gap-1 pt-1">
-                    {project.tools.map((t, tIdx) => (
+                    {project.tools.map((toolName, tIdx) => (
                       <span
                         key={tIdx}
                         className="bg-[#1e3a5f] text-yellow-300 font-pixel text-[6px] sm:text-[7px] px-1.5 py-0.5 border border-black"
                       >
-                        {t}
+                        {toolName}
                       </span>
                     ))}
                   </div>
@@ -177,7 +181,11 @@ export default function ProjectsPage() {
                           className="w-full flex items-center justify-center gap-1 py-1.5 px-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-pixel text-[7px] sm:text-[8px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all text-center whitespace-normal break-words leading-tight"
                         >
                           <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          <span>{project.demoLabel || "BUKA LINK PROJEK"}</span>
+                          <span>
+                            {language === "en"
+                              ? (project.demoLabel_en || project.demoLabel || "OPEN PROJECT LINK")
+                              : (project.demoLabel || "BUKA LINK PROJEK")}
+                          </span>
                         </a>
                       )}
                       {project.secondaryUrl && (
@@ -192,7 +200,11 @@ export default function ProjectsPage() {
                           className="w-full flex items-center justify-center gap-1 py-1.5 px-2 bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-pixel text-[7px] sm:text-[8px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all text-center whitespace-normal break-words leading-tight"
                         >
                           <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          <span>{project.secondaryLabel || "BUKA LINK KEDUA"}</span>
+                          <span>
+                            {language === "en"
+                              ? (project.secondaryLabel_en || project.secondaryLabel || "OPEN SECONDARY LINK")
+                              : (project.secondaryLabel || "BUKA LINK KEDUA")}
+                          </span>
                         </a>
                       )}
                       {project.githubUrl && !project.demoUrl && (
@@ -207,7 +219,7 @@ export default function ProjectsPage() {
                           className="w-full flex items-center justify-center gap-1 py-1.5 px-2 bg-[#334155] hover:bg-[#475569] text-white font-pixel text-[7px] sm:text-[8px] border border-black shadow-[2px_2px_0px_#000] font-bold transition-all text-center whitespace-normal break-words leading-tight"
                         >
                           <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          <span>LIHAT REPO GITHUB</span>
+                          <span>{language === "id" ? "LIHAT REPO GITHUB" : "VIEW GITHUB REPO"}</span>
                         </a>
                       )}
                     </div>
@@ -219,7 +231,7 @@ export default function ProjectsPage() {
                   onClick={() => handleOpenProject(project)}
                   className="w-full mt-3 py-2 sm:py-2.5 bg-[#ea580c] hover:bg-[#f97316] text-white font-pixel text-[7px] sm:text-[8px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <span>BUKA DETAIL STUDI KASUS</span>
+                  <span>{t.projects.btnDetails}</span>
                   <ArrowRight className="w-3 h-3 flex-shrink-0" />
                 </button>
               </div>
@@ -233,7 +245,7 @@ export default function ProjectsPage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#475569] hover:bg-[#64748b] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] text-center"
             >
-              ◀ LIHAT PROFIL & STATS
+              ◀ {language === "id" ? "LIHAT PROFIL & STATS" : "CHARACTER PROFILE"}
             </Link>
 
             <Link
@@ -241,14 +253,14 @@ export default function ProjectsPage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#16a34a] hover:bg-[#15803d] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
             >
-              <span>LANJUT KE PETA KARIER</span>
+              <span>{t.projects.btnNext}</span>
               <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Quest Modal */}
+      {/* Project Details Modal */}
       <ProjectModal project={activeProject} onClose={() => setActiveProject(null)} />
     </div>
   );

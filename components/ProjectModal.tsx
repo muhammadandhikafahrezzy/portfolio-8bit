@@ -4,6 +4,8 @@ import React from "react";
 import { Project } from "@/data/portfolioData";
 import { soundManager } from "./SoundManager";
 import { PixelComputer, PixelGamepad, PixelDatabase, PixelChart } from "./PixelIcons";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import { ExternalLink, User, Wrench, Sparkles, Eye, Globe } from "lucide-react";
 
 interface ProjectModalProps {
@@ -12,6 +14,9 @@ interface ProjectModalProps {
 }
 
 export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
+
   if (!project) return null;
 
   const renderIcon = () => {
@@ -46,7 +51,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               onClose();
             }}
             className="w-5 h-5 sm:w-6 sm:h-6 bg-[#991b1b] hover:bg-[#ef4444] text-white flex items-center justify-center border border-black font-pixel text-[10px] sm:text-xs active:translate-y-0.5 cursor-pointer flex-shrink-0"
-            title="Tutup Jendela"
+            title={language === "id" ? "Tutup Jendela" : "Close Window"}
           >
             ✕
           </button>
@@ -64,9 +69,11 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                 {project.category}
               </span>
               <h2 className="font-pixel text-xs sm:text-sm md:text-base text-yellow-300 mb-1 leading-snug">
-                {project.title}
+                {language === "en" ? (project.title_en || project.title) : project.title}
               </h2>
-              <p className="font-vt323 text-base sm:text-lg text-cyan-300 leading-tight">{project.subtitle}</p>
+              <p className="font-vt323 text-base sm:text-lg text-cyan-300 leading-tight">
+                {language === "en" ? (project.subtitle_en || project.subtitle) : project.subtitle}
+              </p>
             </div>
           </div>
 
@@ -74,7 +81,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px]">
             <div className="bg-[#111f30] p-2 border border-black flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              <span className="truncate">ROLE: {project.role}</span>
+              <span className="truncate">ROLE: {language === "en" ? (project.role_en || project.role) : project.role}</span>
             </div>
             <div className="bg-[#111f30] p-2 border border-black flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
@@ -87,7 +94,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             <div className="bg-[#1e293b] p-2.5 sm:p-3 border-2 border-black space-y-2">
               <h4 className="font-pixel text-[8px] sm:text-[9px] text-yellow-400 flex items-center gap-1.5">
                 <Globe className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                <span>LINK KARYA & HASIL PROJEK:</span>
+                <span>{language === "id" ? "LINK KARYA & HASIL PROJEK:" : "PROJECT DELIVERABLES & LIVE LINKS:"}</span>
               </h4>
               <div className="flex flex-col gap-1.5">
                 {project.demoUrl && (
@@ -100,9 +107,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{project.demoLabel || "BUKA LINK PROJEK"}</span>
+                      <span className="truncate">
+                        {language === "en"
+                          ? (project.demoLabel_en || project.demoLabel || "OPEN PROJECT DEMO")
+                          : (project.demoLabel || "BUKA LINK PROJEK")}
+                      </span>
                     </div>
-                    <span className="text-yellow-300 flex-shrink-0 ml-2">KUNJUNGI ▶</span>
+                    <span className="text-yellow-300 flex-shrink-0 ml-2">{language === "id" ? "KUNJUNGI ▶" : "VISIT ▶"}</span>
                   </a>
                 )}
 
@@ -116,9 +127,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{project.secondaryLabel || "BUKA LINK KEDUA"}</span>
+                      <span className="truncate">
+                        {language === "en"
+                          ? (project.secondaryLabel_en || project.secondaryLabel || "OPEN SECONDARY LINK")
+                          : (project.secondaryLabel || "BUKA LINK KEDUA")}
+                      </span>
                     </div>
-                    <span className="text-yellow-300 flex-shrink-0 ml-2">KUNJUNGI ▶</span>
+                    <span className="text-yellow-300 flex-shrink-0 ml-2">{language === "id" ? "KUNJUNGI ▶" : "VISIT ▶"}</span>
                   </a>
                 )}
 
@@ -132,9 +147,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{project.demoLabel || "LIHAT REPOSITORI GITHUB"}</span>
+                      <span className="truncate">
+                        {language === "en"
+                          ? (project.demoLabel_en || "VIEW GITHUB REPOSITORY")
+                          : (project.demoLabel || "LIHAT REPOSITORI GITHUB")}
+                      </span>
                     </div>
-                    <span className="text-yellow-300 flex-shrink-0 ml-2">BUKA REPO ▶</span>
+                    <span className="text-yellow-300 flex-shrink-0 ml-2">{language === "id" ? "BUKA REPO ▶" : "VIEW REPO ▶"}</span>
                   </a>
                 )}
 
@@ -148,23 +167,27 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <Eye className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{project.demoLabel || "LIHAT BUKTI SERTIFIKAT"}</span>
+                      <span className="truncate">
+                        {language === "en"
+                          ? (project.demoLabel_en || "VIEW CREDENTIAL")
+                          : (project.demoLabel || "LIHAT BUKTI SERTIFIKAT")}
+                      </span>
                     </div>
-                    <span className="text-yellow-300 flex-shrink-0 ml-2">LIHAT ▶</span>
+                    <span className="text-yellow-300 flex-shrink-0 ml-2">{language === "id" ? "LIHAT ▶" : "VIEW ▶"}</span>
                   </a>
                 )}
               </div>
             </div>
           )}
 
-          {/* Long Description (Rata Kiri Kanan) */}
+          {/* Long Description */}
           <div className="bg-[#111f30] p-2.5 sm:p-3.5 border-2 border-black space-y-1.5">
             <h4 className="font-pixel text-[8px] sm:text-[9px] text-yellow-400 flex items-center gap-1.5">
               <span>📜</span>
-              <span>DESKRIPSI PROSES & ANALISIS:</span>
+              <span>{language === "id" ? "DESKRIPSI PROSES & ANALISIS:" : "METHODOLOGY & ANALYTICAL PROCESS:"}</span>
             </h4>
             <div className="font-vt323 text-base sm:text-lg text-slate-300 space-y-1.5 leading-relaxed text-justify sm:text-left">
-              {project.longDescription.map((desc, idx) => (
+              {(language === "en" && project.longDescription_en ? project.longDescription_en : project.longDescription).map((desc, idx) => (
                 <p key={idx} className="leading-relaxed">• {desc}</p>
               ))}
             </div>
@@ -174,10 +197,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
           <div className="bg-[#111f30] p-2.5 sm:p-3.5 border-2 border-black space-y-1.5">
             <h4 className="font-pixel text-[8px] sm:text-[9px] text-green-400 flex items-center gap-1.5">
               <span>⭐</span>
-              <span>HIGHLIGHT PENCAPAIAN:</span>
+              <span>{language === "id" ? "HIGHLIGHT PENCAPAIAN:" : "CORE HIGHLIGHTS & OUTCOMES:"}</span>
             </h4>
             <ul className="grid grid-cols-1 gap-1 font-vt323 text-base sm:text-lg text-slate-200">
-              {project.highlights.map((hl, idx) => (
+              {(language === "en" && project.highlights_en ? project.highlights_en : project.highlights).map((hl, idx) => (
                 <li key={idx} className="flex items-start gap-1.5 leading-snug">
                   <span className="text-yellow-400 font-pixel text-[7px] flex-shrink-0 mt-1">▶</span>
                   <span className="text-justify sm:text-left leading-relaxed">{hl}</span>
@@ -190,7 +213,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
           <div className="bg-[#111f30] p-2.5 sm:p-3.5 border-2 border-black space-y-1.5">
             <h4 className="font-pixel text-[8px] sm:text-[9px] text-cyan-400 flex items-center gap-1.5">
               <Wrench className="w-3 h-3 flex-shrink-0" />
-              <span>TOOLS & GEAR:</span>
+              <span>{language === "id" ? "TOOLS & GEAR:" : "TOOLS & TECH STACK:"}</span>
             </h4>
             <div className="flex flex-wrap gap-1">
               {project.tools.map((tool, idx) => (
@@ -214,7 +237,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             }}
             className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 font-bold cursor-pointer"
           >
-            TUTUP QUEST LOG [ESC]
+            {language === "id" ? "TUTUP QUEST LOG [ESC]" : "CLOSE QUEST LOG [ESC]"}
           </button>
         </div>
       </div>

@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { soundManager } from "./SoundManager";
 import { PixelCoin, PixelSlime, PixelBat, PixelWarpPipe, PixelKnight } from "./PixelIcons";
 import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import { Heart } from "lucide-react";
 
 interface PixelFooterProps {
@@ -12,6 +14,8 @@ interface PixelFooterProps {
 }
 
 export const PixelFooter: React.FC<PixelFooterProps> = ({ score, onCoinCollect }) => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
   const [hpSegments, setHpSegments] = useState<number>(6);
   const [slimeColor, setSlimeColor] = useState<"green" | "blue">("green");
 
@@ -43,7 +47,7 @@ export const PixelFooter: React.FC<PixelFooterProps> = ({ score, onCoinCollect }
           {/* Interactive Slime */}
           <button
             onClick={handleSlimeClick}
-            title="Klik slime untuk mengubah warna!"
+            title={language === "id" ? "Klik slime untuk mengubah warna!" : "Click slime to morph color!"}
             className="animate-slimeWobble cursor-pointer mb-1 sm:mb-2 hover:scale-110 transition-transform"
           >
             <PixelSlime className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 drop-shadow-[2px_2px_0px_#000]" color={slimeColor} />
@@ -57,7 +61,7 @@ export const PixelFooter: React.FC<PixelFooterProps> = ({ score, onCoinCollect }
               soundManager.playCoin();
               onCoinCollect();
             }}
-            title="Klik untuk ambil koin bonus!"
+            title={t.nav.coinTooltip}
             className="animate-bouncePixel cursor-pointer hover:scale-125 transition-transform"
           >
             <PixelCoin className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
@@ -67,7 +71,9 @@ export const PixelFooter: React.FC<PixelFooterProps> = ({ score, onCoinCollect }
             © {new Date().getFullYear()} {PORTFOLIO_DATA.about.name}. ALL RIGHTS RESERVED.
           </p>
           <p className="font-vt323 text-xs sm:text-sm text-cyan-400">
-            CRAFTED WITH NEXT.JS, TAILWIND CSS & RETRO 8-BIT PASSION 🕹️
+            {language === "id"
+              ? "CRAFTED WITH NEXT.JS, TAILWIND CSS & RETRO 8-BIT PASSION 🕹️"
+              : "CRAFTED WITH NEXT.JS, TAILWIND CSS & RETRO 8-BIT PASSION 🕹️"}
           </p>
         </div>
 
@@ -76,7 +82,7 @@ export const PixelFooter: React.FC<PixelFooterProps> = ({ score, onCoinCollect }
           {/* Health Bar (Segmented Red Boxes) */}
           <div
             onClick={handleHpClick}
-            title="Klik HP Bar untuk regenerasi darah!"
+            title={language === "id" ? "Klik HP Bar untuk regenerasi darah!" : "Click HP bar to restore health!"}
             className="bg-[#0f172a] border border-black sm:border-2 p-1 shadow-[2px_2px_0px_#000] flex items-center gap-1 cursor-pointer"
           >
             <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 fill-red-500" />

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { PhotoFrame } from "@/components/PhotoFrame";
 import { soundManager } from "@/components/SoundManager";
 import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import {
   Award,
   BookOpen,
@@ -17,6 +19,8 @@ import {
 } from "lucide-react";
 
 export default function AboutPage() {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
   const [activeTab, setActiveTab] = useState<"story" | "stats" | "skills">("story");
   const [currentPhoto, setCurrentPhoto] = useState<string>(
     "/Gemini_Generated_Image_3mneq83mneq83mne.jpg"
@@ -38,7 +42,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              STAGE 01: CHARACTER_PROFILE_AND_STATS.EXE
+              {t.about.windowTitle}
             </h1>
           </div>
           <div className="flex items-center gap-1 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
@@ -79,7 +83,7 @@ export default function AboutPage() {
                       soundManager.playClick();
                       setCurrentPhoto(p.src);
                     }}
-                    title={`Lihat ${p.label}`}
+                    title={`View ${p.label}`}
                     className={`w-3.5 h-3.5 sm:w-4 sm:h-4 border border-black transition-transform cursor-pointer ${
                       currentPhoto === p.src
                         ? "bg-yellow-400 scale-125 shadow-[1px_1px_0px_#000]"
@@ -88,7 +92,9 @@ export default function AboutPage() {
                   />
                 ))}
               </div>
-              <span className="font-pixel text-[6px] sm:text-[7px] text-slate-400 mt-1">PILIH FOTO PROFIL</span>
+              <span className="font-pixel text-[6px] sm:text-[7px] text-slate-400 mt-1">
+                {language === "id" ? "PILIH FOTO PROFIL" : "SWITCH AVATAR POSE"}
+              </span>
             </div>
 
             {/* RPG Dialogue & Bio Details */}
@@ -96,7 +102,7 @@ export default function AboutPage() {
               {/* Retro Speech Bubble */}
               <div className="bg-[#f8fafc] text-black border-2 sm:border-4 border-black p-2.5 sm:p-3.5 shadow-[3px_3px_0px_#000000] relative">
                 <p className="font-pixel text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed text-slate-900 uppercase text-justify sm:text-left">
-                  {PORTFOLIO_DATA.about.dialogue}
+                  {language === "en" ? PORTFOLIO_DATA.about.dialogue_en : PORTFOLIO_DATA.about.dialogue}
                 </p>
               </div>
 
@@ -106,7 +112,7 @@ export default function AboutPage() {
                   {PORTFOLIO_DATA.about.name}
                 </h2>
                 <p className="font-pixel text-[9px] sm:text-xs text-cyan-300">
-                  {PORTFOLIO_DATA.about.title}
+                  {language === "en" ? PORTFOLIO_DATA.about.title_en : PORTFOLIO_DATA.about.title}
                 </p>
               </div>
 
@@ -114,15 +120,21 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 font-pixel text-[8px] sm:text-[9px] text-slate-200">
                 <div className="flex items-center gap-2 bg-[#111f30] p-2 sm:p-2.5 border border-black sm:border-2">
                   <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />
-                  <span className="truncate">{PORTFOLIO_DATA.about.degree}</span>
+                  <span className="truncate">
+                    {language === "en" ? PORTFOLIO_DATA.about.degree_en : PORTFOLIO_DATA.about.degree}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#111f30] p-2 sm:p-2.5 border border-black sm:border-2">
                   <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
-                  <span className="truncate">IPK 3.69 / 4.00 (Lulus Jul 2026)</span>
+                  <span className="truncate">
+                    {language === "en" ? "3.69 / 4.00 GPA (Graduated Jul 2026)" : "IPK 3.69 / 4.00 (Lulus Jul 2026)"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#111f30] p-2 sm:p-2.5 border border-black sm:border-2 sm:col-span-2">
                   <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400 flex-shrink-0" />
-                  <span className="truncate">Depok, Jawa Barat / Surabaya, Jawa Timur</span>
+                  <span className="truncate">
+                    {language === "en" ? "Depok & Surabaya, Indonesia" : "Depok, Jawa Barat / Surabaya, Jawa Timur"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -141,7 +153,7 @@ export default function AboutPage() {
                   : "bg-[#1e293b] text-slate-300 hover:bg-[#334155]"
               }`}
             >
-              📖 CERITA & FILOSOFI
+              📖 {language === "id" ? "CERITA & FILOSOFI" : "STORY & VISION"}
             </button>
             <button
               onClick={() => {
@@ -154,7 +166,7 @@ export default function AboutPage() {
                   : "bg-[#1e293b] text-slate-300 hover:bg-[#334155]"
               }`}
             >
-              ⚔️ RPG STATUS SHEET
+              ⚔️ {language === "id" ? "RPG STATUS SHEET" : "RPG STATUS SHEET"}
             </button>
             <button
               onClick={() => {
@@ -167,26 +179,20 @@ export default function AboutPage() {
                   : "bg-[#1e293b] text-slate-300 hover:bg-[#334155]"
               }`}
             >
-              📊 MATRIKS KEAHLIAN
+              📊 {language === "id" ? "MATRIKS KEAHLIAN" : "SKILLS MATRIX"}
             </button>
           </div>
 
-          {/* Tab 1: Cerita & Perjalanan Karier (Rata Kiri Kanan / Justify) */}
+          {/* Tab 1: Cerita & Perjalanan Karier */}
           {activeTab === "story" && (
             <div className="space-y-4">
               <div className="bg-[#111f30] p-3 sm:p-5 md:p-6 border-2 sm:border-4 border-black space-y-3 font-vt323 text-base sm:text-lg md:text-xl text-slate-200 leading-relaxed text-justify sm:text-left">
                 <h3 className="font-pixel text-xs sm:text-sm text-yellow-400 mb-2">
-                  🎯 Mengapa Data Analytics & Business Intelligence?
+                  🎯 {t.about.mainStoryTitle}
                 </h3>
-                <p>
-                  Sebagai mahasiswa Sistem Informasi di Universitas Negeri Surabaya, saya menyadari bahwa data adalah aset paling berharga dalam era digital modern. Namun, data mentah tidak memiliki arti tanpa analisis mendalam, pembersihan data yang presisi, dan visualisasi interaktif yang dapat dicerna oleh para pengambil keputusan secara cepat dan akurat.
-                </p>
-                <p>
-                  Pengalaman kerja nyata saya di <strong className="text-yellow-300">Koperasi Karyawan PT Astra Honda Motor</strong> memberikan pemahaman langsung mengenai pentingnya keakuratan stok persediaan, pencatatan transaksi anggota, dan bagaimana pelaporan berkala berbasis data warehouse mampu mengoptimalkan efisiensi operasional organisasi.
-                </p>
-                <p>
-                  Keunggulan unik saya terletak pada <strong className="text-cyan-300">perpaduan logika data analitik (SQL, Python, Excel) dengan kepekaan desain antarmuka (UI/UX)</strong>. Hal ini memungkinkan saya merancang dashboard analitik yang tidak hanya akurat secara matematis, tetapi juga sangat intuitif, rapi, dan mudah digunakan oleh jajaran eksekutif maupun tim operasional.
-                </p>
+                <p>{t.about.story1}</p>
+                <p>{t.about.story2}</p>
+                <p>{t.about.story3}</p>
               </div>
             </div>
           )}
@@ -204,7 +210,7 @@ export default function AboutPage() {
               {/* HP Bar */}
               <div>
                 <div className="flex justify-between text-[7px] sm:text-[8px] md:text-[9px] text-red-400 mb-1">
-                  <span>HP (HEALTH & WORK ETHIC)</span>
+                  <span>{language === "id" ? "HP (DAYA TAHAN & ETOS KERJA)" : "HP (STAMINA & WORK ETHIC)"}</span>
                   <span>{PORTFOLIO_DATA.about.stats.hp}</span>
                 </div>
                 <div className="w-full h-3.5 sm:h-4 bg-black border-2 border-slate-700 p-0.5">
@@ -215,7 +221,7 @@ export default function AboutPage() {
               {/* MP Bar */}
               <div>
                 <div className="flex justify-between text-[7px] sm:text-[8px] md:text-[9px] text-cyan-400 mb-1">
-                  <span>MP (LOGICAL REASONING & SQL)</span>
+                  <span>{language === "id" ? "MP (LOGIKA QUERY & SQL PRECISION)" : "MP (LOGICAL REASONING & SQL PRECISION)"}</span>
                   <span>{PORTFOLIO_DATA.about.stats.mp}</span>
                 </div>
                 <div className="w-full h-3.5 sm:h-4 bg-black border-2 border-slate-700 p-0.5">
@@ -226,8 +232,8 @@ export default function AboutPage() {
               {/* EXP Bar */}
               <div>
                 <div className="flex justify-between text-[7px] sm:text-[8px] md:text-[9px] text-green-400 mb-1">
-                  <span>EXP (ACADEMIC / IPK 3.69)</span>
-                  <span>{PORTFOLIO_DATA.about.stats.exp}</span>
+                  <span>{language === "id" ? "EXP (AKADEMIK / IPK 3.69)" : "EXP (ACADEMIC / 3.69 GPA)"}</span>
+                  <span>{language === "en" ? PORTFOLIO_DATA.about.stats.exp_en : PORTFOLIO_DATA.about.stats.exp}</span>
                 </div>
                 <div className="w-full h-3.5 sm:h-4 bg-black border-2 border-slate-700 p-0.5">
                   <div className="h-full bg-gradient-to-r from-green-600 to-emerald-400 w-[92%]" />
@@ -238,7 +244,7 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 text-[7px] sm:text-[8px]">
                 <div className="bg-[#162a42] p-2 sm:p-2.5 border border-black">
                   <span className="text-yellow-400 block mb-0.5 font-bold">🗡️ WEAPON:</span>
-                  <span className="text-slate-200">SQL Query & Python Pandas</span>
+                  <span className="text-slate-200">SQL Querying & Python Pandas</span>
                 </div>
                 <div className="bg-[#162a42] p-2 sm:p-2.5 border border-black">
                   <span className="text-cyan-400 block mb-0.5 font-bold">🛡️ SHIELD:</span>
@@ -259,7 +265,9 @@ export default function AboutPage() {
                 <div key={idx} className="bg-[#111f30] p-3 sm:p-4 border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
                   <div className="font-pixel text-[9px] sm:text-[10px] text-yellow-400 mb-2.5 sm:mb-3 flex items-center gap-1.5 border-b border-slate-700 pb-1.5 sm:pb-2">
                     <span>{cat.icon}</span>
-                    <span className="truncate">{cat.title}</span>
+                    <span className="truncate">
+                      {language === "en" ? (cat.title_en || cat.title) : cat.title}
+                    </span>
                   </div>
 
                   <div className="space-y-2.5 sm:space-y-3 font-pixel text-[7px] sm:text-[8px]">
@@ -290,7 +298,7 @@ export default function AboutPage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#475569] hover:bg-[#64748b] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] text-center"
             >
-              ◀ KEMBALI KE HOME
+              ◀ {language === "id" ? "KEMBALI KE HOME" : "BACK TO HOME"}
             </Link>
 
             <div className="flex flex-col sm:flex-row gap-2">
@@ -301,14 +309,14 @@ export default function AboutPage() {
                 className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d97706] hover:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
               >
                 <FileText className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>UNDUH CV (.DOCX)</span>
+                <span>{language === "id" ? "UNDUH CV (.DOCX)" : "DOWNLOAD CV (.DOCX)"}</span>
               </a>
               <Link
                 href="/projects"
                 onClick={() => soundManager.playClick()}
                 className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
               >
-                <span>LIHAT PROYEK DATA</span>
+                <span>{t.about.btnNext}</span>
                 <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
               </Link>
             </div>

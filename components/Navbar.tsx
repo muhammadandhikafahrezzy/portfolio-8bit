@@ -6,8 +6,10 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { soundManager } from "./SoundManager";
 import { PixelCoin } from "./PixelIcons";
-import { Volume2, VolumeX, Menu, X } from "lucide-react";
+import { Volume2, VolumeX, Menu, X, Globe } from "lucide-react";
 import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 
 interface NavbarProps {
   score?: number;
@@ -16,17 +18,19 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ score = 100, onCoinCollect }) => {
   const pathname = usePathname();
+  const { language, toggleLanguage } = useLanguage();
+  const t = TRANSLATIONS[language];
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { href: "/", label: "HOME" },
-    { href: "/about", label: "TENTANG" },
-    { href: "/projects", label: "PROYEK" },
-    { href: "/experience", label: "PENGALAMAN" },
-    { href: "/certificates", label: "SERTIFIKAT" },
-    { href: "/minigame", label: "MINIGAME 🕹️" },
-    { href: "/contact", label: "KONTAK" },
+    { href: "/", label: t.nav.home },
+    { href: "/about", label: t.nav.about },
+    { href: "/projects", label: t.nav.projects },
+    { href: "/experience", label: t.nav.experience },
+    { href: "/certificates", label: t.nav.certificates },
+    { href: "/minigame", label: t.nav.minigame },
+    { href: "/contact", label: t.nav.contact },
   ];
 
   const handleNavClick = () => {
@@ -37,6 +41,11 @@ export const Navbar: React.FC<NavbarProps> = ({ score = 100, onCoinCollect }) =>
   const handleSoundToggle = () => {
     const newState = soundManager.toggleMute();
     setSoundEnabled(newState);
+  };
+
+  const handleLanguageToggle = () => {
+    soundManager.playClick();
+    toggleLanguage();
   };
 
   return (
@@ -85,15 +94,25 @@ export const Navbar: React.FC<NavbarProps> = ({ score = 100, onCoinCollect }) =>
           </Link>
         </div>
 
-        {/* Right: Score Counter, SFX Toggle & User Avatar Badge */}
+        {/* Right: Language Switcher, Score Counter, SFX Toggle & User Avatar Badge */}
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Language Switcher Toggle Button (ID 🇮🇩 / EN 🇬🇧) */}
+          <button
+            onClick={handleLanguageToggle}
+            title={language === "id" ? "Switch to English (EN)" : "Ganti ke Bahasa Indonesia (ID)"}
+            className="px-1.5 sm:px-2 py-1 sm:py-1.5 bg-[#0284c7] hover:bg-[#0369a1] text-white border sm:border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 transition-all flex items-center gap-1 font-pixel text-[7px] sm:text-[8px] cursor-pointer"
+          >
+            <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+            <span className="font-bold tracking-wider">{language === "id" ? "🇮🇩 ID" : "🇬🇧 EN"}</span>
+          </button>
+
           {/* Interactive Coin Collector button */}
           <button
             onClick={() => {
               soundManager.playCoin();
               if (onCoinCollect) onCoinCollect();
             }}
-            title="Klik koin untuk menambah skor!"
+            title={t.nav.coinTooltip}
             className="flex items-center gap-1 bg-[#164e63] hover:bg-[#0e7490] text-yellow-300 px-1.5 sm:px-2 py-1 sm:py-1.5 border sm:border-2 border-black shadow-[2px_2px_0px_#000] active:scale-95 transition-transform cursor-pointer group"
           >
             <PixelCoin className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:animate-bounce flex-shrink-0" />
@@ -105,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({ score = 100, onCoinCollect }) =>
           {/* Sound Effect Toggle */}
           <button
             onClick={handleSoundToggle}
-            title={soundEnabled ? "Matikan Suara SFX" : "Nyalakan Suara SFX"}
+            title={soundEnabled ? "Mute SFX" : "Unmute SFX"}
             className={`px-1.5 sm:px-2 py-1 sm:py-1.5 border sm:border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1 font-pixel text-[7px] sm:text-[8px] transition-colors cursor-pointer ${
               soundEnabled
                 ? "bg-[#15803d] text-white hover:bg-[#16a34a]"

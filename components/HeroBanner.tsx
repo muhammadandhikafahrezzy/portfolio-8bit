@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { soundManager } from "./SoundManager";
 import { PixelCoin, PixelKnight } from "./PixelIcons";
 import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import confetti from "canvas-confetti";
 
 interface HeroBannerProps {
@@ -11,6 +13,8 @@ interface HeroBannerProps {
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
   const [windowMinimized, setWindowMinimized] = useState(false);
   const [knightJumping, setKnightJumping] = useState(false);
 
@@ -48,7 +52,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0" />
             <span className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              STAGE_01: DATA ANALYST_PORTFOLIO
+              {t.hero.windowTitle}
             </span>
           </div>
 
@@ -112,7 +116,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
                   onCoinCollect();
                 }}
                 className="hover:scale-125 transition-transform cursor-pointer"
-                title="Klik untuk ambil koin!"
+                title={t.nav.coinTooltip}
               >
                 <PixelCoin className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </button>
@@ -124,7 +128,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
                   onCoinCollect();
                 }}
                 className="hover:scale-125 transition-transform cursor-pointer"
-                title="Klik untuk ambil koin!"
+                title={t.nav.coinTooltip}
               >
                 <PixelCoin className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" />
               </button>
@@ -133,13 +137,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
             {/* Center Content: Title & CTA */}
             <div className="relative z-10 text-center max-w-3xl mx-auto my-auto pt-2 pb-4 sm:pb-6 px-1">
               <p className="font-pixel text-[9px] sm:text-[11px] md:text-sm text-yellow-300 tracking-wider mb-1.5 sm:mb-2 drop-shadow-[2px_2px_0px_#000000]">
-                {PORTFOLIO_DATA.hero.greeting}
+                {t.hero.greeting}
               </p>
               <h1 className="font-pixel text-lg sm:text-2xl md:text-4xl lg:text-5xl text-white tracking-wide leading-tight mb-2 sm:mb-3 text-shadow-pixel whitespace-pre-line">
-                <span className="text-yellow-400">{PORTFOLIO_DATA.hero.title}</span>
+                <span className="text-yellow-400">{t.hero.title}</span>
               </h1>
               <p className="font-vt323 text-base sm:text-xl md:text-2xl text-slate-100 mb-4 sm:mb-6 max-w-xl mx-auto tracking-wide drop-shadow-[2px_2px_0px_#000000] leading-snug">
-                {PORTFOLIO_DATA.hero.subtitle}
+                {t.hero.subtitle}
               </p>
 
               {/* Glowing CTA Button */}
@@ -149,7 +153,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
                 className="group relative inline-flex items-center gap-1.5 sm:gap-2 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[9px] sm:text-xs md:text-sm px-4 sm:px-6 py-2.5 sm:py-3 border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000000] sm:shadow-[4px_4px_0px_#000000] active:translate-y-1 active:shadow-[1px_1px_0px_#000000] transition-all cursor-pointer animate-pulse font-bold"
               >
                 <span className="text-red-600">▶</span>
-                <span>{PORTFOLIO_DATA.hero.cta}</span>
+                <span>{language === "en" ? PORTFOLIO_DATA.hero.cta_en : PORTFOLIO_DATA.hero.cta}</span>
                 <span className="text-red-600">◀</span>
               </button>
             </div>
@@ -180,7 +184,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onCoinCollect }) => {
                 <div className="flex flex-col items-center">
                   <button
                     onClick={handleKnightClick}
-                    title="Klik ksatria untuk melompat!"
+                    title={language === "id" ? "Klik ksatria untuk melompat!" : "Click the knight to jump!"}
                     className={`cursor-pointer transition-transform ${
                       knightJumping ? "-translate-y-8 scale-110" : "hover:-translate-y-1"
                     }`}

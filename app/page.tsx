@@ -7,60 +7,65 @@ import { PhotoFrame } from "@/components/PhotoFrame";
 import { PixelGamepad } from "@/components/PixelIcons";
 import { soundManager } from "@/components/SoundManager";
 import { PORTFOLIO_DATA } from "@/data/portfolioData";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import { ArrowRight, Sparkles, Database, Award, User, Briefcase, Mail } from "lucide-react";
 
 export default function Home() {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
+
   const worldPortals = [
     {
       href: "/about",
-      stage: "STAGE 01",
-      title: "PROFIL & STATS",
-      desc: "Foto profil asli, biodata, status RPG LV. 23, dan matriks keahlian data.",
+      stage: t.portals.stages.about.stage,
+      title: t.portals.stages.about.title,
+      desc: t.portals.stages.about.desc,
       icon: <User className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />,
       color: "border-[#0284c7] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#0284c7] hover:bg-[#0369a1]",
     },
     {
       href: "/projects",
-      stage: "STAGE 02",
-      title: "STUDI KASUS DATA",
-      desc: "Studi kasus Data Warehouse AHM, Sales Intelligence Tableau, dan Teknopolis.",
+      stage: t.portals.stages.projects.stage,
+      title: t.portals.stages.projects.title,
+      desc: t.portals.stages.projects.desc,
       icon: <Database className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />,
       color: "border-[#ea580c] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#ea580c] hover:bg-[#c2410c]",
     },
     {
       href: "/experience",
-      stage: "STAGE 03",
-      title: "PETA KARIER",
-      desc: "Riwayat pengalaman industri di Kopkar PT Astra Honda Motor & PT Kanaya.",
+      stage: t.portals.stages.experience.stage,
+      title: t.portals.stages.experience.title,
+      desc: t.portals.stages.experience.desc,
       icon: <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />,
       color: "border-[#16a34a] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#16a34a] hover:bg-[#15803d]",
     },
     {
       href: "/certificates",
-      stage: "STAGE 04",
-      title: "TROPHY ROOM",
-      desc: "Sertifikat resmi Bitlabs Data Analytics for Business & Kampus Merdeka.",
+      stage: t.portals.stages.certificates.stage,
+      title: t.portals.stages.certificates.title,
+      desc: t.portals.stages.certificates.desc,
       icon: <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />,
       color: "border-[#d97706] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#d97706] hover:bg-[#b45309]",
     },
     {
       href: "/minigame",
-      stage: "BONUS STAGE",
-      title: "DATA KNIGHT VS ULER 🗡️🐍",
-      desc: "Bantu karakter Andhika mengumpulkan data bits di labirin dan taklukkan 4 Uler Bug!",
+      stage: t.portals.stages.minigame.stage,
+      title: t.portals.stages.minigame.title,
+      desc: t.portals.stages.minigame.desc,
       icon: <PixelGamepad className="w-5 h-5 sm:w-6 sm:h-6" />,
       color: "border-[#15803d] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#15803d] hover:bg-[#166534]",
     },
     {
       href: "/contact",
-      stage: "STAGE 05",
-      title: "KOTAK SURAT",
-      desc: "Hubungi untuk kolaborasi, wawancara kerja, dan unduh CV resmi (.docx).",
+      stage: t.portals.stages.contact.stage,
+      title: t.portals.stages.contact.title,
+      desc: t.portals.stages.contact.desc,
       icon: <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-red-400" />,
       color: "border-[#0d9488] hover:border-yellow-400 bg-[#0f172a]",
       btnBg: "bg-[#0d9488] hover:bg-[#0f766e]",
@@ -90,7 +95,9 @@ export default function Home() {
               <div className="inline-flex items-center gap-1.5 bg-[#1e3a5f] border border-black sm:border-2 px-2 py-0.5 sm:px-2.5 sm:py-1">
                 <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400 flex-shrink-0" />
                 <span className="font-pixel text-[7px] sm:text-[8px] md:text-[9px] text-yellow-300">
-                  OPEN TO WORK: JUNIOR DATA ANALYST / BI SPECIALIST
+                  {language === "id"
+                    ? "OPEN TO WORK: JUNIOR DATA ANALYST / BI SPECIALIST"
+                    : "OPEN TO WORK: DATA ANALYST & BI SPECIALIST"}
                 </span>
               </div>
 
@@ -99,26 +106,34 @@ export default function Home() {
               </h2>
 
               <p className="font-vt323 text-base sm:text-lg md:text-xl text-slate-300 text-justify sm:text-left leading-relaxed max-w-3xl">
-                Lulusan S1 Sistem Informasi Universitas Negeri Surabaya (IPK 3.69, Selesai Juli 2026) dengan keahlian teknis kuat dalam pengolahan basis data SQL, scripting analitik Python, perancangan dashboard Tableau & Looker Studio, serta pemahaman bisnis operasional dari pengalaman kerja nyata di Koperasi Karyawan PT Astra Honda Motor.
+                {language === "en" ? PORTFOLIO_DATA.about.bio_en : PORTFOLIO_DATA.about.bio}
               </p>
 
               {/* Data Metrics Badges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1">
                 <div className="bg-[#0a1622] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
                   <span className="font-pixel text-[9px] sm:text-xs text-yellow-400 block truncate">3.69 / 4.0</span>
-                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">IPK S1 SI UNESA</span>
+                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">
+                    {language === "id" ? "IPK S1 SI UNESA" : "B.CS Degree GPA"}
+                  </span>
                 </div>
                 <div className="bg-[#0a1622] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
                   <span className="font-pixel text-[9px] sm:text-xs text-green-400 block truncate">SQL & PYTHON</span>
-                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">Core Analytics</span>
+                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">
+                    {language === "id" ? "Keahlian Analitik" : "Core Analytics"}
+                  </span>
                 </div>
                 <div className="bg-[#0a1622] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
                   <span className="font-pixel text-[9px] sm:text-xs text-cyan-400 block truncate">TABLEAU</span>
-                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">BI & Visualisasi</span>
+                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">
+                    {language === "id" ? "BI & Visualisasi" : "BI & Dashboards"}
+                  </span>
                 </div>
                 <div className="bg-[#0a1622] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
                   <span className="font-pixel text-[9px] sm:text-xs text-red-400 block truncate">AHM KOPKAR</span>
-                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">Data Warehouse</span>
+                  <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">
+                    {language === "id" ? "Data Warehouse" : "Data Warehousing"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -130,11 +145,15 @@ export default function Home() {
       <section id="world-map" className="px-2 sm:px-4 md:px-6 max-w-7xl mx-auto w-full">
         <div className="mb-3 sm:mb-4 flex items-center justify-between border-b-2 border-slate-700 pb-2">
           <div>
-            <span className="font-pixel text-[8px] sm:text-[9px] text-yellow-400 block">PILIH STAGE PETUALANGAN</span>
-            <h3 className="font-pixel text-xs sm:text-sm md:text-base text-white">WORLD MAP & MENU HALAMAN</h3>
+            <span className="font-pixel text-[8px] sm:text-[9px] text-yellow-400 block">
+              {t.portals.heading}
+            </span>
+            <h3 className="font-pixel text-xs sm:text-sm md:text-base text-white">
+              {language === "id" ? "WORLD MAP & MENU HALAMAN" : "WORLD MAP & STAGE SELECT"}
+            </h3>
           </div>
           <span className="font-vt323 text-sm sm:text-base text-cyan-300 hidden sm:inline">
-            TOTAL 6 STAGES TERSEDIA ▶
+            {language === "id" ? "TOTAL 6 STAGES TERSEDIA ▶" : "6 ACTIVE STAGES AVAILABLE ▶"}
           </span>
         </div>
 
@@ -169,7 +188,7 @@ export default function Home() {
               <div
                 className={`w-full py-1.5 sm:py-2 px-2 sm:px-3 text-center font-pixel text-[7px] sm:text-[8px] text-white border-2 border-black shadow-[2px_2px_0px_#000] flex items-center justify-center gap-1 font-bold ${portal.btnBg}`}
               >
-                <span>MASUKI STAGE</span>
+                <span>{t.portals.enterStage}</span>
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>

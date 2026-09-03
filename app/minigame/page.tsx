@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { soundManager } from "@/components/SoundManager";
 import confetti from "canvas-confetti";
+import { useLanguage } from "@/context/LanguageContext";
+import { TRANSLATIONS } from "@/data/translations";
 import {
   Trophy,
   RotateCcw,
@@ -69,6 +71,8 @@ interface SnakeEnemy {
 }
 
 export default function AndhikaHardDungeonLabyrinthPage() {
+  const { language } = useLanguage();
+  const t = TRANSLATIONS[language];
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "gameover" | "victory">("idle");
   const [score, setScore] = useState<number>(0);
@@ -991,7 +995,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-yellow-400 border border-black inline-block flex-shrink-0 animate-spin" />
             <h1 className="font-pixel text-[8px] sm:text-[10px] md:text-xs text-white tracking-wider font-bold truncate">
-              BONUS STAGE: DATA_DUNGEON_KNIGHT_VS_ULER.EXE
+              {t.minigame.windowTitle}
             </h1>
           </div>
           <div className="flex items-center gap-1.5 font-pixel text-[8px] sm:text-[10px] flex-shrink-0">
@@ -1017,15 +1021,15 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           {/* Top HUD Status Bar */}
           <div className="w-full grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 font-pixel text-[7px] sm:text-[8px] md:text-[9px]">
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-              <span className="text-slate-400 block truncate">1UP SKOR</span>
+              <span className="text-slate-400 block truncate">{t.minigame.score}</span>
               <span className="text-yellow-400 font-bold block truncate">{score}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-              <span className="text-slate-400 block truncate">HIGH SCORE</span>
+              <span className="text-slate-400 block truncate">{t.minigame.highScore}</span>
               <span className="text-cyan-400 font-bold block truncate">{highScore}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-              <span className="text-slate-400 block truncate">NYAWA</span>
+              <span className="text-slate-400 block truncate">{t.minigame.lives}</span>
               <div className="flex items-center justify-center gap-1 text-red-500 mt-0.5">
                 {Array.from({ length: Math.max(0, lives) }).map((_, i) => (
                   <Heart key={i} className="w-3 h-3 fill-red-500 inline-block" />
@@ -1033,17 +1037,17 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               </div>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-1 sm:col-span-1">
-              <span className="text-slate-400 block truncate">DATA BITS</span>
+              <span className="text-slate-400 block truncate">{t.minigame.dataBits}</span>
               <span className="text-green-400 font-bold block truncate">{bitsLeft}</span>
             </div>
             <div className="bg-[#111f30] p-1.5 sm:p-2 border border-black sm:border-2 text-center col-span-2 sm:col-span-1">
-              <span className="text-slate-400 block truncate">POWER CRYSTAL</span>
+              <span className="text-slate-400 block truncate">{t.minigame.powerCrystal}</span>
               <span
                 className={`font-bold block truncate ${
                   powerTimer > 0 ? "text-cyan-300 animate-pulse font-bold" : "text-slate-500"
                 }`}
               >
-                {powerTimer > 0 ? `KEBAL (${Math.ceil(powerTimer / 60)}s)` : "READY"}
+                {powerTimer > 0 ? `${t.minigame.powerActive} (${Math.ceil(powerTimer / 60)}s)` : t.minigame.ready}
               </span>
             </div>
           </div>
@@ -1065,10 +1069,10 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             {gameState === "idle" && (
               <div className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
                 <span className="font-pixel text-yellow-400 text-sm sm:text-base md:text-lg tracking-wider text-shadow-pixel">
-                  DATA DUNGEON LABYRINTH 🗡️🐍
+                  {t.minigame.gameTitle}
                 </span>
                 <p className="font-vt323 text-base sm:text-lg text-slate-200 max-w-xs leading-snug">
-                  4 Uler Bug aktif memburu posisi Anda! Ambil Power Crystal untuk menjadi kebal & menebas uler!
+                  {t.minigame.gameDesc}
                 </p>
 
                 {/* Snake Bug Lineup */}
@@ -1096,7 +1100,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
                   className="px-5 py-2.5 bg-[#10b981] hover:bg-[#059669] text-black font-pixel text-[9px] sm:text-xs border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5 animate-pulse"
                 >
                   <Play className="w-3.5 h-3.5 fill-black" />
-                  <span>START GAME [SPACE]</span>
+                  <span>{t.minigame.btnStart}</span>
                 </button>
               </div>
             )}
@@ -1105,17 +1109,17 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             {gameState === "gameover" && (
               <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
                 <span className="font-pixel text-red-500 text-lg sm:text-2xl tracking-wider">
-                  GAME OVER
+                  {t.minigame.gameOver}
                 </span>
                 <p className="font-pixel text-[8px] sm:text-[9px] text-slate-300">
-                  SKOR AKHIR: <span className="text-yellow-400">{score}</span>
+                  {t.minigame.finalScore} <span className="text-yellow-400">{score}</span>
                 </p>
                 <button
                   onClick={startGame}
                   className="px-4 py-2 bg-[#facc15] hover:bg-[#eab308] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>MAIN LAGI [TRY AGAIN]</span>
+                  <span>{t.minigame.btnRetry}</span>
                 </button>
               </div>
             )}
@@ -1124,20 +1128,20 @@ export default function AndhikaHardDungeonLabyrinthPage() {
             {gameState === "victory" && (
               <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center space-y-3 animate-in fade-in">
                 <span className="font-pixel text-green-400 text-lg sm:text-2xl tracking-wider">
-                  DUNGEON CONQUERED! 🎉
+                  {t.minigame.victory}
                 </span>
                 <p className="font-vt323 text-lg text-slate-200">
-                  Luar biasa! Anda berhasil menaklukkan Data Dungeon tersulit!
+                  {t.minigame.victoryDesc}
                 </p>
                 <p className="font-pixel text-[8px] sm:text-[9px] text-yellow-300">
-                  TOTAL SKOR: {score}
+                  {t.minigame.finalScore} {score}
                 </p>
                 <button
                   onClick={startGame}
                   className="px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
                 >
                   <Trophy className="w-3.5 h-3.5" />
-                  <span>MAINKAN LAGI</span>
+                  <span>{t.minigame.btnPlayAgain}</span>
                 </button>
               </div>
             )}
@@ -1146,7 +1150,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           {/* Virtual Mobile D-Pad Controls */}
           <div className="w-full max-w-sm flex flex-col items-center pt-2 pb-1 space-y-2">
             <span className="font-pixel text-[7px] sm:text-[8px] text-slate-400 block text-center">
-              KONTROL D-PAD (TOUCH / ARROW KEYS / WASD / SWIPE)
+              {t.minigame.controlsHint}
             </span>
 
             <div className="grid grid-cols-3 gap-1.5 w-44">
@@ -1184,11 +1188,11 @@ export default function AndhikaHardDungeonLabyrinthPage() {
           <div className="w-full bg-[#111f30] p-3 sm:p-4 border-2 border-black text-[7px] sm:text-[8px] font-pixel text-slate-300 space-y-1.5 text-justify sm:text-left">
             <h4 className="text-yellow-400 font-bold mb-1 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-              <span>PANDUAN TAKTIK DATA DUNGEON:</span>
+              <span>{t.minigame.rulesTitle}</span>
             </h4>
-            <p>• <strong className="text-cyan-300">Power Insight Crystal (Berlian Biru):</strong> Memberikan status <span className="text-yellow-300 font-bold">KEBAL TOTAL (~8 Detik)</span>. Sentuh uler mana pun untuk menebas dan mendapatkan bonus combo <span className="text-green-400 font-bold">+200, +400, +800, +1600 Poin</span>!</p>
-            <p>• <strong className="text-emerald-400">Pengejaran Aktif Uler:</strong> Uler aktif bergerak memburu posisi ksatria Anda dan saling menghindari tabrakan sesama uler.</p>
-            <p>• <strong className="text-green-400">Tunnel Warp:</strong> Manfaatkan lorong kiri/kanan untuk teleportasi instan menghindari kepungan uler.</p>
+            <p>• {t.minigame.rulesCrystal}</p>
+            <p>• {t.minigame.rulesChase}</p>
+            <p>• {t.minigame.rulesTunnel}</p>
           </div>
 
           {/* Bottom Actions */}
@@ -1198,7 +1202,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 bg-[#475569] hover:bg-[#64748b] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] text-center"
             >
-              ◀ KEMBALI KE SERTIFIKAT
+              {t.minigame.btnBack}
             </Link>
 
             <Link
@@ -1206,7 +1210,7 @@ export default function AndhikaHardDungeonLabyrinthPage() {
               onClick={() => soundManager.playClick()}
               className="px-3 sm:px-4 py-2 bg-[#0d9488] hover:bg-[#0f766e] text-white font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
             >
-              <span>LANJUT KE KOTAK SURAT</span>
+              <span>{t.minigame.btnNext}</span>
               <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
             </Link>
           </div>
