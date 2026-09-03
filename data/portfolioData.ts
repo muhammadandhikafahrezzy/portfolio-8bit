@@ -107,6 +107,7 @@ export const PORTFOLIO_DATA = {
         skills: [
           { name: "SQL (MySQL / PostgreSQL)", level: 92 },
           { name: "Python (Pandas, NumPy)", level: 88 },
+          { name: "Odoo ERP (Data & Inventory)", level: 86 },
           { name: "Google BigQuery", level: 82 },
           { name: "Data Cleaning & Preprocessing", level: 95 },
           { name: "Exploratory Data Analysis (EDA)", level: 90 },

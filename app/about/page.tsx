@@ -258,36 +258,101 @@ export default function AboutPage() {
             </div>
           )}
 
-          {/* Tab 3: Matriks Keahlian Data */}
+          {/* Tab 3: Matriks Keahlian Data (Vertikal Stack & Profisiensi Jelas) */}
           {activeTab === "skills" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-              {PORTFOLIO_DATA.about.skillCategories.map((cat, idx) => (
-                <div key={idx} className="bg-[#111f30] p-3 sm:p-4 border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000]">
-                  <div className="font-pixel text-[9px] sm:text-[10px] text-yellow-400 mb-2.5 sm:mb-3 flex items-center gap-1.5 border-b border-slate-700 pb-1.5 sm:pb-2">
-                    <span>{cat.icon}</span>
-                    <span className="truncate">
-                      {language === "en" ? (cat.title_en || cat.title) : cat.title}
+            <div className="space-y-4 sm:space-y-5">
+              {/* Proficiency Benchmark Legend */}
+              <div className="bg-[#0e2235] p-3 sm:p-4 border-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 font-pixel text-[7px] sm:text-[8px]">
+                <div className="flex items-center gap-1.5 text-yellow-400 font-bold">
+                  <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{language === "id" ? "STANDAR PROFISIENSI KEAHLIAN:" : "SKILL PROFICIENCY BENCHMARK:"}</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-yellow-400 text-black font-bold border border-black text-[7px] sm:text-[8px] shadow-[1px_1px_0px_#000]">
+                      👑 EXPERT
+                    </span>
+                    <span className="font-vt323 text-sm sm:text-base text-slate-200">
+                      ≥ 90% ({language === "id" ? "Penguasaan Mahir & Mandiri" : "Advanced Mastery & Autonomous"})
                     </span>
                   </div>
 
-                  <div className="space-y-2.5 sm:space-y-3 font-pixel text-[7px] sm:text-[8px]">
-                    {cat.skills.map((s, sIdx) => (
-                      <div key={sIdx}>
-                        <div className="flex justify-between text-slate-300 mb-1">
-                          <span className="truncate max-w-[75%]">{s.name}</span>
-                          <span className="text-yellow-300 font-bold">{s.level}%</span>
-                        </div>
-                        <div className="w-full h-2 sm:h-2.5 bg-black border border-slate-700 p-0.5">
-                          <div
-                            className="h-full bg-gradient-to-r from-cyan-500 to-yellow-400"
-                            style={{ width: `${s.level}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-[#0284c7] text-white font-bold border border-black text-[7px] sm:text-[8px] shadow-[1px_1px_0px_#000]">
+                      ⚡ INTERMEDIATE
+                    </span>
+                    <span className="font-vt323 text-sm sm:text-base text-slate-200">
+                      &lt; 90% ({language === "id" ? "Pemahaman Solid & Terapan" : "Solid Working Knowledge & Applied"})
+                    </span>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Stacked Categories */}
+              <div className="space-y-4">
+                {PORTFOLIO_DATA.about.skillCategories.map((cat, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-[#111f30] p-3.5 sm:p-5 border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000]"
+                  >
+                    {/* Category Header */}
+                    <div className="font-pixel text-[10px] sm:text-xs text-yellow-400 mb-3 sm:mb-4 flex items-center justify-between border-b-2 border-slate-700 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base sm:text-lg">{cat.icon}</span>
+                        <span className="font-bold tracking-wide">
+                          {language === "en" ? (cat.title_en || cat.title) : cat.title}
+                        </span>
+                      </div>
+                      <span className="text-[7px] sm:text-[8px] font-pixel text-slate-400 bg-[#0a1622] px-2 py-0.5 border border-black">
+                        {cat.skills.length} {language === "id" ? "KEAHLIAN" : "SKILLS"}
+                      </span>
+                    </div>
+
+                    {/* 2-Column Responsive Grid Inside Each Category with Ample Horizontal Width */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3.5 font-pixel text-[7.5px] sm:text-[8.5px]">
+                      {cat.skills.map((s, sIdx) => {
+                        const isExpert = s.level >= 90;
+                        return (
+                          <div key={sIdx} className="bg-[#0a1622] p-2 sm:p-2.5 border border-black sm:border-2 space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-slate-100 font-bold">
+                                {s.name}
+                              </span>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <span
+                                  className={`px-1.5 py-0.5 text-[6.5px] sm:text-[7.5px] font-bold border border-black shadow-[1px_1px_0px_#000] ${
+                                    isExpert
+                                      ? "bg-yellow-400 text-black"
+                                      : "bg-[#0284c7] text-white"
+                                  }`}
+                                >
+                                  {isExpert ? "EXPERT" : "INTERMEDIATE"}
+                                </span>
+                                <span className="text-yellow-300 font-bold w-7 text-right">
+                                  {s.level}%
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Retro Progress Bar */}
+                            <div className="w-full h-2 sm:h-2.5 bg-black border border-slate-700 p-0.5">
+                              <div
+                                className={`h-full ${
+                                  isExpert
+                                    ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-yellow-400"
+                                    : "bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-300"
+                                }`}
+                                style={{ width: `${s.level}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
