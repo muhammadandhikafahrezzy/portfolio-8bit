@@ -22,7 +22,7 @@ Website portofolio interaktif bergaya **Retro 8-Bit Platformer / RPG Adventure**
    - Showcase proyek UI/UX (Teknopolis, Unesa Health Care), Data Warehouse (Toko AHM v2 & v3), dan Desain Grafis (PT Kanaya Multi Karya).
    - Modal detail karya dengan tools, peran, dan highlight pencapaian.
 5. **🏆 Trophy Room & Adventure Log:**
-   - Riwayat pengalaman kerja profesional dan pendidikan (IPK 3.69 / 4.00).
+   - Riwayat pengalaman kerja profesional dan pendidikan (IPK 3.74 / 4.00).
    - Preview dokumen sertifikat resmi (Bitlabs Data Analytics & Kampus Merdeka).
 6. **📬 Kotak Surat Kontak & Unduh CV:**
    - Link cepat ke WhatsApp, LinkedIn, salin email instan, dan unduh berkas CV.

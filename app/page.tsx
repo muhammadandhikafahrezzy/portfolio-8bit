@@ -112,7 +112,7 @@ export default function Home() {
               {/* Data Metrics Badges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 pt-1">
                 <div className="bg-[#0a1622] p-1.5 sm:p-2 border border-black sm:border-2 text-center">
-                  <span className="font-pixel text-[9px] sm:text-xs text-yellow-400 block truncate">3.69 / 4.0</span>
+                  <span className="font-pixel text-[9px] sm:text-xs text-yellow-400 block truncate">3.74 / 4.0</span>
                   <span className="font-vt323 text-xs sm:text-sm text-slate-300 block truncate">
                     {language === "id" ? "IPK S1 SI UNESA" : "B.CS Degree GPA"}
                   </span>

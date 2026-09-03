@@ -127,7 +127,7 @@ export default function AboutPage() {
                 <div className="flex items-center gap-2 bg-[#111f30] p-2 sm:p-2.5 border border-black sm:border-2">
                   <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
                   <span className="truncate">
-                    {language === "en" ? "3.69 / 4.00 GPA (Graduated Jul 2026)" : "IPK 3.69 / 4.00 (Lulus Jul 2026)"}
+                    {language === "en" ? "3.74 / 4.00 GPA (Graduated Jul 2026)" : "IPK 3.74 / 4.00 (Lulus Jul 2026)"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#111f30] p-2 sm:p-2.5 border border-black sm:border-2 sm:col-span-2">
@@ -232,11 +232,11 @@ export default function AboutPage() {
               {/* EXP Bar */}
               <div>
                 <div className="flex justify-between text-[7px] sm:text-[8px] md:text-[9px] text-green-400 mb-1">
-                  <span>{language === "id" ? "EXP (AKADEMIK / IPK 3.69)" : "EXP (ACADEMIC / 3.69 GPA)"}</span>
+                  <span>{language === "id" ? "EXP (AKADEMIK / IPK 3.74)" : "EXP (ACADEMIC / 3.74 GPA)"}</span>
                   <span>{language === "en" ? PORTFOLIO_DATA.about.stats.exp_en : PORTFOLIO_DATA.about.stats.exp}</span>
                 </div>
                 <div className="w-full h-3.5 sm:h-4 bg-black border-2 border-slate-700 p-0.5">
-                  <div className="h-full bg-gradient-to-r from-green-600 to-emerald-400 w-[92%]" />
+                  <div className="h-full bg-gradient-to-r from-green-600 to-emerald-400 w-[93.5%]" />
                 </div>
               </div>
 
@@ -368,7 +368,7 @@ export default function AboutPage() {
 
             <div className="flex flex-col sm:flex-row gap-2">
               <a
-                href="/CV_Muhammad_Andhika_Fahrezzy_ID.docx"
+                href={`/${PORTFOLIO_DATA.contact.cvFilename}`}
                 download
                 onClick={() => soundManager.playLevelUp()}
                 className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d97706] hover:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"

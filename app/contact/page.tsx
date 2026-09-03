@@ -231,7 +231,7 @@ export default function ContactPage() {
 
                 {/* Download CV */}
                 <a
-                  href="/CV_Muhammad_Andhika_Fahrezzy_ID.docx"
+                  href={`/${PORTFOLIO_DATA.contact.cvFilename}`}
                   download
                   onClick={() => soundManager.playLevelUp()}
                   className="w-full flex items-center justify-center gap-2 p-2.5 sm:p-3.5 bg-[#d97706] hover:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-[9px] border-2 sm:border-4 border-black shadow-[3px_3px_0px_#000] sm:shadow-[4px_4px_0px_#000] active:translate-y-0.5 font-bold transition-all block text-center"

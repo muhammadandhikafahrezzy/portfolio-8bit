@@ -187,7 +187,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               <span>{language === "id" ? "DESKRIPSI PROSES & ANALISIS:" : "METHODOLOGY & ANALYTICAL PROCESS:"}</span>
             </h4>
             <div className="font-vt323 text-base sm:text-lg text-slate-300 space-y-1.5 leading-relaxed text-justify sm:text-left">
-              {(language === "en" && project.longDescription_en ? project.longDescription_en : project.longDescription).map((desc, idx) => (
+              {((language === "en" && project.longDescription_en ? project.longDescription_en : project.longDescription) || []).map((desc, idx) => (
                 <p key={idx} className="leading-relaxed">• {desc}</p>
               ))}
             </div>
@@ -200,7 +200,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               <span>{language === "id" ? "HIGHLIGHT PENCAPAIAN:" : "CORE HIGHLIGHTS & OUTCOMES:"}</span>
             </h4>
             <ul className="grid grid-cols-1 gap-1 font-vt323 text-base sm:text-lg text-slate-200">
-              {(language === "en" && project.highlights_en ? project.highlights_en : project.highlights).map((hl, idx) => (
+              {((language === "en" && project.highlights_en ? project.highlights_en : project.highlights) || []).map((hl, idx) => (
                 <li key={idx} className="flex items-start gap-1.5 leading-snug">
                   <span className="text-yellow-400 font-pixel text-[7px] flex-shrink-0 mt-1">▶</span>
                   <span className="text-justify sm:text-left leading-relaxed">{hl}</span>
