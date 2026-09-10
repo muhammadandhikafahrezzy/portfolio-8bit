@@ -29,7 +29,6 @@ export default function AboutPage() {
   const photos = [
     { src: "/Gemini_Generated_Image_3mneq83mneq83mne.jpg", label: "FORMAL_PORTRAIT.PNG" },
     { src: "/Gemini_Generated_Image_6iw6e86iw6e86iw6.jpg", label: "DATA_WIZARD.PNG" },
-    { src: "/Gemini_Generated_Image_oansi6oansi6oans.jpg", label: "ANALYTICS_MODE.PNG" },
     { src: "/Gemini_Generated_Image_ye9j05ye9j05ye9j.jpg", label: "EXECUTIVE_READY.PNG" },
   ];
 
