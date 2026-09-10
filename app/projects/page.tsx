@@ -207,7 +207,7 @@ export default function ProjectsPage() {
                           </span>
                         </a>
                       )}
-                      {project.githubUrl && !project.demoUrl && (
+                      {project.githubUrl && (
                         <a
                           href={project.githubUrl}
                           target="_blank"

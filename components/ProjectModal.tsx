@@ -149,8 +149,8 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                       <ExternalLink className="w-3 h-3 flex-shrink-0" />
                       <span className="truncate">
                         {language === "en"
-                          ? (project.demoLabel_en || "VIEW GITHUB REPOSITORY")
-                          : (project.demoLabel || "LIHAT REPOSITORI GITHUB")}
+                          ? "VIEW GITHUB REPOSITORY"
+                          : "LIHAT REPOSITORI GITHUB"}
                       </span>
                     </div>
                     <span className="text-yellow-300 flex-shrink-0 ml-2">{language === "id" ? "BUKA REPO ▶" : "VIEW REPO ▶"}</span>

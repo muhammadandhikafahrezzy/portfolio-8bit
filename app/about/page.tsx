@@ -374,7 +374,7 @@ export default function AboutPage() {
                 className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d97706] hover:bg-[#f59e0b] text-black font-pixel text-[8px] sm:text-[9px] border-2 border-black shadow-[2px_2px_0px_#000] font-bold flex items-center justify-center gap-1.5 text-center"
               >
                 <FileText className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>{language === "id" ? "UNDUH CV (.DOCX)" : "DOWNLOAD CV (.DOCX)"}</span>
+                <span>{language === "id" ? "UNDUH CV (.PDF)" : "DOWNLOAD CV (.PDF)"}</span>
               </a>
               <Link
                 href="/projects"

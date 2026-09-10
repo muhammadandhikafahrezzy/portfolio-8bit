@@ -125,7 +125,7 @@ export const ContactSection: React.FC = () => {
               className="w-full flex items-center justify-center gap-2 bg-[#d97706] hover:bg-[#f59e0b] text-black font-pixel text-[9px] p-2.5 border-2 border-black shadow-[3px_3px_0px_#000] active:translate-y-0.5 transition-all font-bold"
             >
               <FileText className="w-4 h-4" />
-              <span>UNDUH RESUME / CV LENGKAP (.DOCX)</span>
+              <span>UNDUH RESUME / CV LENGKAP (.PDF)</span>
             </a>
           </div>
         </div>
